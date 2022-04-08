@@ -1,0 +1,10 @@
+# Flask
+.env
+env/
+__pycache__
+
+# React
+node_modules/
+package-lock.json
+*.log
+*.gz
