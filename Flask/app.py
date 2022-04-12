@@ -1,5 +1,11 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
+import os
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
+from dotenv import load_dotenv
+
 
 app = Flask(
     __name__,
