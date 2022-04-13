@@ -1,8 +1,7 @@
 import os
 import datetime
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from typing import List
 
@@ -85,7 +84,10 @@ class Teacher(User):
             user.is_admin = source[u'is_admin']
 
         if u'owned_projects' in source:
-            user.owned_projects = source[u'owned_projects']
+            for project_summary_dict in source[u'owned_projects']:
+                project_summary = \
+                    ProjectSummary.from_dict(project_summary_dict)
+                user.owned_projects.append(project_summary)
 
         return user
 
@@ -96,70 +98,65 @@ class Teacher(User):
             u'email': self.email,
             u'hashed_pwd': self.hashed_pwd,
             u'is_admin': self.is_admin,
-            u'owned_projects': self.owned_projects
+            u'owned_projects': [project_summary.to_dict() for project_summary
+                                in self.owned_projects]
         }
         return dest
 
-    def add_owned_project(self):
-        pass
+    def add_owned_project(self, project_summary: "ProjectSummary"):
+        self.owned_projects.append(project_summary)
+
+    def remove_owned_project(self, project_id: str):
+        for project_summary in self.owned_projects:
+            if project_summary.project_id == project_id:
+                self.owned_projects.remove(project_summary)
 
 
 class ProjectSummary:
-    def __init__(self, project_id: str, title: str, description: str,
-                 num_questions: int):
+    def __init__(self, project_id: str, title: str, description: str):
         self.project_id = project_id
         self.title = title
         self.description = description
-        self.num_questions = num_questions
 
     @staticmethod
     def from_dict(source: dict) -> "ProjectSummary":
         proj = ProjectSummary(source[u'project_id'], source[u'title'],
-                              source[u'description'], source[u'num_questions'])
+                              source[u'description'])
         return proj
 
     def to_dict(self) -> dict:
         dest = {
             u'project_id': self.project_id,
             u'title': self.title,
-            u'description': self.description,
-            u'num_questions': self.num_questions,
+            u'description': self.description
         }
         return dest
 
 
 class Project:
-    def __init__(self, owner_id, title, description):
+    def __init__(self, owner_id: str, title: str, description: str):
         self.owner_id = owner_id
         self.title = title
         self.description = description
-        self.total_observations = 0
-        self.student_members = []
         self.questions = []
 
     @staticmethod
-    def from_dict(source):
+    def from_dict(source: dict) -> "Project":
         proj = Project(source[u'owner_id'], source[u'title'],
                        source[u'description'])
 
-        if u'total_observations' in source:
-            proj.total_observations = source[u'total_observations']
-
-        if u'student_members' in source:
-            proj.student_members = source[u'student_members']
-
         if u'questions' in source:
-            proj.questions = source[u'questions']
+            for question_dict in source[u'questions']:
+                question = Question.from_dict(question_dict)
+                proj.questions.append(question)
 
         return proj
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         dest = {
             u'owner_id': self.owner_id,
             u'title': self.title,
             u'description': self.description,
-            u'total_observations': self.total_observations,
-            u'student_members': self.student_members,
             u'questions': [question.to_dict() for question in self.questions]
         }
         return dest
@@ -167,16 +164,27 @@ class Project:
     def add_question(self, question: "Question"):
         self.questions.append(question)
 
-    def add_student_member(self, user_id):
-        self.student_members.append(user_id)
+    def remove_question(self, question_num: int):
+        for question in self.questions:
+            if question.question_num == question_num:
+                self.questions.remove(question)
 
-    def increment_total_observations(self, num):
-        self.total_observations += num
+    def edit_question(self, question_num: int):
+        pass
+
+    def get_owner_id(self):
+        return self.owner_id
+
+    def get_title(self):
+        return self.title
+
+    def get_description(self):
+        return self.description
 
 
 class Question:
-    def __init__(self, question_num: int, prompt: str, question_type: int,
-                 choices: List[int] = None, range_min: int = None,
+    def __init__(self, question_num, prompt: str, question_type: int,
+                 choices: List = None, range_min: int = None,
                  range_max: int = None):
         self.question_num = question_num
         self.prompt = prompt
@@ -186,7 +194,7 @@ class Question:
         self.range_max = range_max
 
     @staticmethod
-    def from_dict(source):
+    def from_dict(source: dict) -> "Question":
         question = Question(source[u'question_num'], source[u'prompt'],
                             source[u'type'])
 
@@ -212,86 +220,90 @@ class Question:
         }
         return dest
 
-    def add_choices(self, choices):
+    def set_choices(self, choices: List):
         """
-        Adds choices to a MULTIPLE_CHOICE question
+        Sets choices to a MULTIPLE_CHOICE question
         :param choices: a list of choices
         """
         if self.type != MULTIPLE_CHOICE:
             print("Can't add choices to non MULTIPLE_CHOICE type question.")
             raise InvalidQuestionTypeError
-        if self.choices is None:
-            self.choices = []
-        for choice in choices:
-            self.choices.append(choice)
+        self.choices = choices
 
-    def set_range_min(self, min_val):
+    def set_range_min(self, min_val: int):
         self.range_min = min_val
 
-    def set_range_max(self, max_val):
+    def set_range_max(self, max_val: int):
         self.range_max = max_val
 
 
 class Observation:
-    def __init__(self, author_id, first_name, last_name, title):
+    def __init__(self, author_id: str, first_name: str, last_name: str,
+                 title: str):
         self.author_id = author_id
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
         self.datetime = datetime.datetime.now()
-        self.observation = []
+        self.responses = []  # contains response objects
 
     @staticmethod
-    def from_dict(source):
+    def from_dict(source: dict) -> "Observation":
         observation = Observation(source[u'author_id'], source[u'first_name'],
                                   source[u'last_name'], source[u'title'])
 
+        # TODO: proper formatting of datetime from dict
         if u'datetime' in source:
             observation.datetime = source[u'datetime']
 
         if u'observation' in observation:
-            observation.observation = source[u'observation']
+            for response_dict in source[u'observation']:
+                response = Response.from_dict(response_dict)
+                observation.responses.append(response)
 
         return observation
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         dest = {
             u'author_id': self.author_id,
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
             u'datetime': self.datetime,
-            u'observation': self.observation
+            u'observation': [response.to_dict() for response in
+                             self.responses]
         }
         return dest
 
-    def add_response(self, response):
+    def add_response(self, response: "Response"):
         """
-        Adds a Response object to the observation.
+        Adds a Response object to the responses.
         """
-        pass
+        self.responses.append(response)
 
-    def remove_response(self, question_num):
-        pass
+    def remove_response(self, question_num: int):
+        for response in self.responses:
+            if response.question_num == question_num:
+                self.responses.remove(response)
 
-    def edit_response(self, question_num):
+    def edit_response(self, question_num: int):
         pass
 
 
 class Response:
-    def __init__(self, question_num, question_type, response):
+    def __init__(self, question_num: int, question_type: int, response):
         self.question_num = question_num
         self.type = question_type
-        self.response = response
+        self.response = response  # response is variable depending on type
 
     @staticmethod
-    def from_dict(source):
+    def from_dict(source: dict) -> "Response":
         response = Response(source[u'question_num'], source[u'type'],
                             source[u'response'])
 
         return response
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         dest = {
             u'question_num': self.question_num,
             u'type': self.type,
@@ -299,81 +311,136 @@ class Response:
         }
         return dest
 
-    def __repr__(self):
-        return (
-            f'Response(\n\tquestion_num={self.question_num}, \n\t'
-            f'type={self.type}, \n\t'
-            f'response={self.response}, \n\t'
-            f')'
-        )
+    def edit_response(self, response):
+        self.response = response
 
-    def add_response(self, response):
-        """
-        Adds a Response object to the observation.
-        """
-        pass
+    def remove_response(self):
+        self.response = None
 
-    def remove_response(self, question_num):
-        pass
 
-    def edit_response(self, question_num):
-        pass
+def create_student(student: "Student"):
+    db = firestore.client()
+    student_ref = db.collection(u'Users').add(student.to_dict())
+    return student_ref[1].id
+
+
+def create_teacher(teacher: "Teacher"):
+    db = firestore.client()
+    teacher_ref = db.collection(u'Users').add(teacher.to_dict())
+    return teacher_ref[1].id
+
+
+def create_project(project: "Project"):
+    """
+    Takes a Project instance, adds it to the database, and sets the
+    auto-generated id.
+    :param project: the Project instance
+    :return: the Project instance with the auto-generated id set
+    """
+    db = firestore.client()
+    project_ref = db.collection(u'Projects').document()
+    project_id = project_ref.id
+    project_ref.set(project.to_dict())
+
+    # create and add project summary to the project owner
+    project_summary = ProjectSummary(project_id, project.get_title(),
+                                     project.get_description())
+    db.collection(u'Users').document(project.get_owner_id())\
+        .update({u'owned_projects': firestore
+                .ArrayUnion([project_summary.to_dict()])})
+
+    return project_ref.id
+
+
+def create_observation(project_id: str, observation: "Observation"):
+    db = firestore.client()
+    obs_ref = db.collection(u'Projects').document(project_id)\
+        .collection(u'Observations').add(observation.to_dict())
+    return obs_ref[1].id
 
 
 def add_example_data():
-    db = firestore.client()
-
-    users_ref = db.collection(u'Users')
-    projects_ref = db.collection(u'Projects')
-
     # create & add three students
-    student_1 = Student("Jane", "Doe")
-    users_ref.add(student_1.to_dict())
-    student_2 = Student("John", "Doe")
-    users_ref.add(student_2.to_dict())
-    student_3 = Student("Mickey", "Mouse")
-    users_ref.add(student_3.to_dict())
+    num_students = 3
+    student_first_names = ["Jane", "John", "Mickey"]
+    student_last_names = ["Doe", "Deere", "Mouse"]
+    student_ids = []
+    for i in range(num_students):
+        student = Student(student_first_names[i], student_last_names[i])
+        student_ids.append(create_student(student))
 
     # create & add three teachers
-    teacher_1 = Teacher("Marie", "Fitzgerald",
-                        email="mariefitzgerald@test.com",
-                        hashed_pwd="BLAH24t2")
-    teacher_1_ref = users_ref.add(teacher_1.to_dict())
-    teacher_2 = Teacher("Joseph", "Dunkin", email="josephdunkin@test.com",
-                        hashed_pwd="ADGBIOWEKDGO")
-    teacher_2_ref = users_ref.add(teacher_2.to_dict())
-    teacher_3 = Teacher("David", "Anderson", email="davidanderson@test.com",
-                        hashed_pwd="Aasdpghq12werDgd")
-    teacher_3_ref = users_ref.add(teacher_3.to_dict())
+    num_teachers = 3
+    teacher_first_names = ["Marie", "Joseph", "David"]
+    teacher_last_names = ["Curie", "Heller", "Johnson"]
+    emails = ["mariecurie@test.com", "josephheller@test.com",
+              "davidjohnson@test.com"]
+    hashed_pwds = ["BLAH1234", "abcdefg", "somehash"]
+    teacher_ids = []
+    for i in range(num_teachers):
+        teacher = Teacher(teacher_first_names[i], teacher_last_names[i],
+                          emails[i], hashed_pwds[i])
+        teacher_ids.append(create_teacher(teacher))
 
     # create & add three projects
-    teacher_1_id = teacher_1_ref.get().id
-    print("teacher-1 id (marie fitzgerald) = {}".format(teacher_1_id))
-    project_1 = Project(teacher_1_ref.get().id)
+    num_projects = 3
+    titles = ["Study of B. oleracea", "Better Betta Fish", "Birdwatching Log"]
+    descriptions = ["In this three week exploration, we will be gathering...",
+                    "Color pattern observations in Siamese Fighting...",
+                    "Please submit all birds spotted HERE. IMPORTANT..."]
+
+    # with three questions per project
+    num_questions = 3
+    prompts = [["Describe weather...",
+                "Provide height start...",
+                "How many lea..."],
+               ["Describe fish pattern...",
+                "Choose the correct...",
+                "What time of day did..."],
+               ["What is your favorite...",
+                "How many birds do you...",
+                "True or false..."]]
+    types = [[TEXT, FPN, INTEGER],
+             [TEXT, MULTIPLE_CHOICE, DATETIME],
+             [TEXT, INTEGER, BOOLEAN]]
+    choices = [[None, None, None],
+               [None, ["Siamese fighting fish", "Peaceful betta",
+                       "Betta smargadina", "Spotfin betta"], None],
+               [None, None, None]]
+    project_ids = []
+
+    # create each project and add questions
+    for i in range(num_projects):
+        project = Project(teacher_ids[i], titles[i], descriptions[i])
+        for j in range(num_questions):
+            project.add_question(Question(j + 1, prompts[i][j], types[i][j],
+                                          choices[i][j]))
+        project_ids.append(create_project(project))
+
+    project_responses = [[["Sunny...", 4.25, 3],
+                          ["Rainy...", 2.74, 8],
+                          ["Cloudy...", 24.2, 12]],
+                         [["Shiny...", 0, datetime.datetime.now()],
+                          ["Gray...", 2, datetime.datetime.now()],
+                          ["Blue...", 2, datetime.datetime.now()]],
+                         [["The great horned owl", 12, False],
+                          ["American Eagle", 7, True],
+                          ["Nothing", 8, True]]]
+
+    # create one observation per student per project
+    for i in range(len(project_ids)):
+        for j in range(len(student_ids)):
+            observation = Observation(student_ids[j],
+                                      student_first_names[j],
+                                      student_last_names[j],
+                                      "test title")
+            # number of questions per observation
+            for k in range(3):
+                response = Response(k + 1, types[i][k],
+                                    project_responses[i][j][k])
+                observation.add_response(response)
+            create_observation(project_ids[i], observation)
 
 
 if __name__ == "__main__":
-    db = firestore.client()
-    teacher_4 = Teacher("Donald", "Duck", email="donaldduck@test.com",
-                        hashed_pwd="Aasdpghq12werDgdaew")
-    teacher_4_ref = db.collection(u'Users').add(teacher_4.to_dict())
-    teacher_4_id = teacher_4_ref[1].get().id
-    print("teacher_4_id (marie fitzgerald) = {}".format(teacher_4_id))
-    project_1 = Project(teacher_4_id,
-                        "Observation of Ducks in the Wild",
-                        "In this observation, we'll take a look at ducks in "
-                        "the wild! Students will analyze duck biology in the "
-                        "wild.")
-    question_1 = Question(1, "How many ducks are in the pond?", INTEGER)
-    question_1.set_range_min(0)
-    question_1.set_range_max(50)
-
-    question_2 = Question(2, "What is the average size of a duck? (in grams) ",
-                          FPN)
-    question_2.set_range_min(0)
-    question_2.set_range_max(50000)
-
-    project_1.add_question(question_1)
-    project_1.add_question(question_2)
-
-    db.collection(u'Projects').add(project_1.to_dict())
+    add_example_data()
