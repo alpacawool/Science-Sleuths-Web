@@ -1,0 +1,208 @@
+/* Stored CSS variables */
+:root {
+    --nav-width: 200px;
+    --nav-collapse-width: 80px;
+
+    --header-height: 60px;
+
+    --drawer-bg-color: blue;
+    --active-color: yellow;
+}
+
+/* Size elements to fit */
+*,
+*:before,
+*:after {
+    box-sizing:border-box;
+}
+
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: lightslategray;
+
+    .header {
+        display: flex;
+        height: var(--header-height);
+        align-items: center;
+        justify-content: space-between;
+        padding-left: calc(var(--nav-width) + 1rem);
+        transition: padding-left 0.7s ease-in-out;
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            padding: 0.25rem 0.35 rem;
+        }
+
+        .title {
+            margin: auto;
+        }
+    }
+
+    .collapsed-header {
+        padding-left: calc(var(--nav-collapse-width) + 1rem);
+    }
+
+
+    .container {
+        display:flex;
+        flex: 1;
+
+        .mobile-close-icon {
+            display:none;
+        }
+
+        .drawer {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: var(--drawer-bg-color);
+            width:var(--nav-width);
+            transition: all 0.7s ease-in-out;
+
+            .logo {
+                height: var(--header-height);
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+            }
+
+            .nav-item-link, .logo, .logout {
+                font-size: 1.25rem;
+                display: block;
+                color: red;
+                padding: 1rem;
+                white-space: nowrap;
+
+                span {
+                    margin-left: 0.5rem;
+                }
+            }
+        }
+
+        .collapsed {
+            width:var(--nav-collapse-width);
+
+            span {
+                display: none;
+            }
+
+            i {
+                margin-left: 0.5rem;
+            }
+        }
+
+        .content {
+            flex: 1;
+            padding-left: calc(var(--nav-width) + 1rem);
+            padding-top: 1rem;
+            background: green;
+            transition: padding-left 0.7s ease-in-out;
+        }
+
+        .collapsed-content {
+            padding-left: calc(var(--nav-collapse-width) + 1rem);
+        }
+
+    }
+}
+
+/* Responsive Media Queries */
+/* Tablet */
+@media screen and (max-width: 768px) {
+
+    .layout {
+
+        .header {
+            padding-left:calc(var(--nav-collapse-width) + 1rem);
+        }
+
+        .collapsed-header {
+            padding-left: 1rem;
+        }
+
+        .container {
+
+            .drawer {
+                width:var(--nav-collapse-width);
+                
+                .nav-item-link, .logo, .logout {
+                    
+                    span {
+                        display:none;
+                    }
+                }
+            }
+
+            .collapsed {
+                display:none;
+            }
+
+            .content {
+                padding-left:calc(var(--nav-collapse-width) + 1rem);
+            }
+
+            .collapsed-content {
+                padding-left: 1rem;
+            }
+
+        }
+            
+        }
+     
+}
+
+/* Smartphone */
+@media screen and (max-width: 320px) {
+
+    .layout {
+
+        .header {
+            padding-left: 0.5rem;
+        }
+
+        .collapsed-header {
+            padding-left: 0.5rem;
+        }
+
+        .container {
+
+            .mobile-close-icon {
+                display:inline;
+                float: right;
+                padding: 1rem;
+            }
+
+            .drawer {
+                display:none;
+            }
+
+            .collapsed {
+                display:inline;
+                width: 100vw;
+                .nav-item-link, .logo, .logout {
+                    
+                    span {
+                        display:inline;
+                    }
+                }
+            }
+
+            .content {
+                padding-left:0.5rem;
+            }
+
+            .collapsed-content {
+                padding-left: 0.5rem;
+            }
+
+        }
+            
+        }
+     
+}
