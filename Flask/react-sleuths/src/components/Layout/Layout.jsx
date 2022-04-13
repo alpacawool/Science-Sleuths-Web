@@ -1,7 +1,8 @@
 /* 
     Layout serves as a wraparound for the main content of the site.
     Layout typically contains items such as the header, footer, sidebar
-    and other items not typically seen in the main content. 
+    and other items not typically seen in the main content. {children}
+    represents content in pages directory
 */
 import {useState} from 'react'
 
@@ -26,7 +27,7 @@ export const Layout = ({children}) => {
         <div className="toggle-icon" onClick={() => setOpenDrawer(!openDrawer)}>
           {openDrawer ? <ChevronLeftIcon /> : <MenuIcon />}
         </div>
-        <div className="title">Header</div>
+        <div className="title"></div>
       </div>
 
       <div className="container">
@@ -41,28 +42,29 @@ export const Layout = ({children}) => {
             </div>
 
             <div className="logo">
-              <ScienceIcon/>
+              <ScienceIcon className="nav-icon"/>
               <span>ScienceSleuths</span>
             </div>
 
             <ul className="nav">
               <li className="nav-item">
                 <a href="/projects" className="nav-item-link">
-                  <CreditCardIcon />
+                  <CreditCardIcon className="nav-icon"/>
                   <span>Projects</span>
                 </a>
               </li>
 
               <li className="nav-item">
                 <a href="/projects/new" className="nav-item-link">
-                  <CreateNewFolderIcon />
+                  <CreateNewFolderIcon className="nav-icon"/>
                   <span>New Project</span>
                 </a>
               </li>
+
             </ul>
           </div>
           <a href="#" className="logout">
-            <LogoutIcon />
+            <LogoutIcon className="nav-icon"/>
             <span>Log off</span>
           </a>
         </aside>

@@ -1,13 +1,5 @@
-/* Stored CSS variables */
-:root {
-    --nav-width: 200px;
-    --nav-collapse-width: 80px;
-
-    --header-height: 60px;
-
-    --drawer-bg-color: blue;
-    --active-color: yellow;
-}
+@use './../../utilities/css/colors';
+@use './../../utilities/css/sizes';
 
 /* Size elements to fit */
 *,
@@ -20,28 +12,30 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background: lightslategray;
+    background-color: colors.$white;
 
     .header {
         display: flex;
-        height: var(--header-height);
+        height: sizes.$header-height;
         align-items: center;
         justify-content: space-between;
-        padding-left: calc(var(--nav-width) + 1rem);
+        padding-top:0.4rem;
+        padding-left: calc(sizes.$drawer-width + 1rem);
         transition: padding-left 0.7s ease-in-out;
 
         .toggle-icon {
             font-size: 1.5rem;
-            padding: 0.25rem 0.35 rem;
+            padding: 0;
         }
 
         .title {
+            color: colors.$primary-text-color;
             margin: auto;
         }
     }
 
     .collapsed-header {
-        padding-left: calc(var(--nav-collapse-width) + 1rem);
+        padding-left: calc(sizes.$drawer-collapse-width + 1rem);
     }
 
 
@@ -61,21 +55,37 @@
             top: 0;
             left: 0;
             height: 100vh;
-            background: var(--drawer-bg-color);
-            width:var(--nav-width);
+            background-color: colors.$primary-color;
+            width:sizes.$drawer-width;
             transition: all 0.7s ease-in-out;
 
             .logo {
-                height: var(--header-height);
+                height: sizes.$header-height;
                 display: flex;
                 justify-content: flex-start;
                 align-items: center;
             }
 
+            .nav {
+                margin-top:1.5rem;
+
+                .nav-item {
+
+                    :hover {
+                        background-color:colors.$primary-color-dark;
+                        color:colors.$primary-color-text;
+                    }
+                }
+            }
+
+            .nav-icon {
+                font-size:1.1rem;
+            }
+
             .nav-item-link, .logo, .logout {
-                font-size: 1.25rem;
+                font-size: 1.20rem;
                 display: block;
-                color: red;
+                color: colors.$primary-color-light;
                 padding: 1rem;
                 white-space: nowrap;
 
@@ -83,10 +93,22 @@
                     margin-left: 0.5rem;
                 }
             }
+
+            .logout {
+                background-color:colors.$primary-color-dark;
+                color: colors.$primary-color-text;
+                text-align:center;
+                margin:1em;
+                border-radius:2em;
+            }
+
+            .logout:hover {
+                background-color:colors.$primary-color-darker;
+            }
         }
 
         .collapsed {
-            width:var(--nav-collapse-width);
+            width:sizes.$drawer-collapse-width;
 
             span {
                 display: none;
@@ -95,18 +117,22 @@
             i {
                 margin-left: 0.5rem;
             }
+
+            .logout {
+                margin:0.3em;
+            }
         }
 
         .content {
             flex: 1;
-            padding-left: calc(var(--nav-width) + 1rem);
+            padding-left: calc(sizes.$drawer-width + 1rem);
             padding-top: 1rem;
-            background: green;
+            background-color: colors.$white;
             transition: padding-left 0.7s ease-in-out;
         }
 
         .collapsed-content {
-            padding-left: calc(var(--nav-collapse-width) + 1rem);
+            padding-left: calc(sizes.$drawer-collapse-width + 1rem);
         }
 
     }
@@ -119,7 +145,7 @@
     .layout {
 
         .header {
-            padding-left:calc(var(--nav-collapse-width) + 1rem);
+            padding-left:calc(sizes.$drawer-collapse-width + 1rem);
         }
 
         .collapsed-header {
@@ -129,13 +155,17 @@
         .container {
 
             .drawer {
-                width:var(--nav-collapse-width);
+                width:sizes.$drawer-collapse-width;
                 
                 .nav-item-link, .logo, .logout {
                     
                     span {
                         display:none;
                     }
+                }
+
+                .logout {
+                    margin:0.2em;
                 }
             }
 
@@ -144,7 +174,7 @@
             }
 
             .content {
-                padding-left:calc(var(--nav-collapse-width) + 1rem);
+                padding-left:calc(sizes.$drawer-collapse-width + 1rem);
             }
 
             .collapsed-content {
@@ -173,9 +203,10 @@
         .container {
 
             .mobile-close-icon {
-                display:inline;
-                float: right;
+                display:flex;
+                justify-content: right;
                 padding: 1rem;
+                color:colors.$primary-color-text;
             }
 
             .drawer {
