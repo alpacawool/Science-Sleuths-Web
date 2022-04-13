@@ -18,6 +18,10 @@ import './Layout.scss'
 
 export const Layout = ({children}) => {
 
+  /*
+    Drawer logic flow - Drawer will apply collapsed CSS classes
+    to minimize drawer with the toggle onClick function.
+  */
   const [openDrawer, setOpenDrawer] = useState(true);
 
   return (
@@ -34,9 +38,7 @@ export const Layout = ({children}) => {
         <aside 
           className={`${openDrawer ? "" : "collapsed"} drawer`}
         >
-
           <div>
-
             <div className="mobile-close-icon" onClick={() => setOpenDrawer(!openDrawer)}>
               <CloseIcon />
             </div>

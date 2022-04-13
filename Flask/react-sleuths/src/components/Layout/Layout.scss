@@ -126,6 +126,7 @@
         .content {
             flex: 1;
             padding-left: calc(sizes.$drawer-width + 1rem);
+            padding-right: 1rem;
             padding-top: 1rem;
             background-color: colors.$white;
             transition: padding-left 0.7s ease-in-out;
