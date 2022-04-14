@@ -12,7 +12,6 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import Link from "@mui/material/Link";
 
 import './ProjectTable.scss'
 
@@ -107,7 +106,7 @@ export const ProjectTable = () => {
 
 
   let navigate = useNavigate();
-
+  
   function rowClickHandler(project_id) {
     console.log(project_id);
     navigate(`/projects/${project_id}`, {replace: true});
@@ -118,7 +117,8 @@ export const ProjectTable = () => {
       component={Paper}
       sx = {{
         height: "80vh",
-        padding: "1em"
+        padding: "1em",
+        overflow: "scroll",
       }}
     >
       <Table 
