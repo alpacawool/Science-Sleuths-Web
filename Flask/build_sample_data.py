@@ -28,8 +28,11 @@ class InvalidResponseTypeError(Exception):
     pass
 
 
-# base class that is extended by the Student & Teacher classes
 class User:
+    """
+    A base class representing the top-level collection Users. Not used
+    directly - use the Student or Teacher classes instead.
+    """
     def __init__(self, first_name: str, last_name: str):
         self.first_name = first_name
         self.last_name = last_name
@@ -48,6 +51,10 @@ class User:
 
 
 class Student(User):
+    """
+    A class representing a user (student) document in the top-level collection
+    Users.
+    """
     def __init__(self, first_name: str, last_name: str):
         super().__init__(first_name, last_name)
         self.is_admin = False
@@ -67,6 +74,10 @@ class Student(User):
 
 
 class Teacher(User):
+    """
+    A class representing a user (teacher) document in the top-level collection
+    Users.
+    """
     def __init__(self, first_name: str, last_name: str, email: str,
                  hashed_pwd: str, is_admin: bool = True):
         super().__init__(first_name, last_name)
@@ -113,6 +124,10 @@ class Teacher(User):
 
 
 class ProjectSummary:
+    """
+    A class representing a ProjectSummary object that is part of each user
+    (teachers only) document in the top-level collection Users.
+    """
     def __init__(self, project_id: str, title: str, description: str):
         self.project_id = project_id
         self.title = title
@@ -134,11 +149,15 @@ class ProjectSummary:
 
 
 class Project:
+    """
+    A class representing a project document in the top-level collection
+    Projects.
+    """
     def __init__(self, owner_id: str, title: str, description: str):
         self.owner_id = owner_id
         self.title = title
         self.description = description
-        self.questions = []
+        self.questions = []  # contains Question objects
 
     @staticmethod
     def from_dict(source: dict) -> "Project":
@@ -183,6 +202,10 @@ class Project:
 
 
 class Question:
+    """
+    A class representing a Question object that is part of each project
+    document in the top-level collection Projects.
+    """
     def __init__(self, question_num, prompt: str, question_type: int,
                  choices: List = None, range_min: int = None,
                  range_max: int = None):
@@ -238,6 +261,10 @@ class Question:
 
 
 class Observation:
+    """
+    A class representing an observation document in the sub-collection
+    Observations.
+    """
     def __init__(self, author_id: str, first_name: str, last_name: str,
                  title: str):
         self.author_id = author_id
@@ -291,6 +318,10 @@ class Observation:
 
 
 class Response:
+    """
+    A class representing a Response object that is part of each observation
+    document in the sub-collection Observations.
+    """
     def __init__(self, question_num: int, question_type: int, response):
         self.question_num = question_num
         self.type = question_type
@@ -318,24 +349,34 @@ class Response:
         self.response = None
 
 
-def create_student(student: "Student"):
+def create_student(student: "Student") -> str:
+    """
+    Takes a Student instance and adds it to Firestore db
+    :param student: the Student instance
+    :return: the user_id
+    """
     db = firestore.client()
     student_ref = db.collection(u'Users').add(student.to_dict())
     return student_ref[1].id
 
 
-def create_teacher(teacher: "Teacher"):
+def create_teacher(teacher: "Teacher") -> str:
+    """
+    Takes a Teacher instance and adds it to Firestore db
+    :param teacher: the Teacher instance
+    :return: the user_id
+    """
     db = firestore.client()
     teacher_ref = db.collection(u'Users').add(teacher.to_dict())
     return teacher_ref[1].id
 
 
-def create_project(project: "Project"):
+def create_project(project: "Project") -> str:
     """
-    Takes a Project instance, adds it to the database, and sets the
-    auto-generated id.
+    Takes a Project instance and adds it to Firestore db. Creates a Project
+    Summary instance and adds it to the project's owner.
     :param project: the Project instance
-    :return: the Project instance with the auto-generated id set
+    :return: the project_id
     """
     db = firestore.client()
     project_ref = db.collection(u'Projects').document()
@@ -352,7 +393,14 @@ def create_project(project: "Project"):
     return project_ref.id
 
 
-def create_observation(project_id: str, observation: "Observation"):
+def create_observation(project_id: str, observation: "Observation") -> str:
+    """
+    Takes an Observation instance and adds it to the associated project_id
+     in Firestore db
+    :param project_id: the project_id to add the observation to
+    :param observation: the Observation instance
+    :return: observation_id
+    """
     db = firestore.client()
     obs_ref = db.collection(u'Projects').document(project_id)\
         .collection(u'Observations').add(observation.to_dict())
@@ -360,6 +408,9 @@ def create_observation(project_id: str, observation: "Observation"):
 
 
 def add_example_data():
+    """
+    Creates some sample data using the classes/functions above.
+    """
     # create & add three students
     num_students = 3
     student_first_names = ["Jane", "John", "Mickey"]
@@ -443,4 +494,4 @@ def add_example_data():
 
 
 if __name__ == "__main__":
-    add_example_data()
+    pass
