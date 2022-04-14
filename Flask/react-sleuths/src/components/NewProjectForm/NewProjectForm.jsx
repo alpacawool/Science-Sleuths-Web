@@ -44,7 +44,7 @@ export const NewProjectForm = () => {
   
         {questions.map((question, index) => ( 
           <QuestionBox 
-            key={index}
+            key={questions[index].props.id}
             id={questions[index].props.id}
             deleteHandler={deleteQuestion}
           /> ))} 
