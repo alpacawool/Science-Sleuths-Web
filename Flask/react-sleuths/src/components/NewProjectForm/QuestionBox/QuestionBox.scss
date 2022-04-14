@@ -1,0 +1,8 @@
+@use './../../../utilities/css/colors';
+
+.question-box {
+    margin-top:1rem;
+    padding:1rem;
+    border:1px solid colors.$form-outline-unselect;
+    border-radius:0.4rem;
+}

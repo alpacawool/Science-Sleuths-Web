@@ -19,6 +19,7 @@ export const RangeInput = () => {
   return (
     <Grid container
       spacing="1rem"
+      paddingTop="0.5rem"
     >
       <Grid item xs={12} sm={1.5}>
         <FormControlLabel

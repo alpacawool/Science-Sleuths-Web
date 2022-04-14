@@ -1,0 +1,25 @@
+@use './../../../utilities/css/colors';
+
+
+.submit-form-button {
+    display: flex;
+    align-items: center;
+    background-color:colors.$primary-color-darker;
+    color:colors.$primary-color-text;
+    justify-content: center;
+    height:3rem;
+    border-radius:0.3em;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight:800;
+
+    &:hover {
+        background-color:colors.$primary-color-darkest;
+        color:colors.$primary-color-text;
+        cursor:pointer;
+    }
+
+    .add-icon {
+        padding:0.05em;
+    }
+}
