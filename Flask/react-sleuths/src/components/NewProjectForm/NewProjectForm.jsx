@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {v4} from 'uuid'
 
 import TextField from "@mui/material/TextField";
 
@@ -9,11 +10,22 @@ import './NewProjectForm.scss'
 
 export const NewProjectForm = () => {
 
-  const [questions, setQuestions] = useState([]);
+  // Initialize one question in array of questions
+  const [questions, setQuestions] 
+    = useState([]);
   
   function addQuestion() {
-    setQuestions([...questions, <QuestionBox />]);
+    setQuestions([...questions, 
+      <QuestionBox 
+        id={v4(4)}
+      />]);
   }
+
+  function deleteQuestion(id) {
+    const newQuestions = questions.filter(i => i.props.id !== id);
+    setQuestions(newQuestions);
+  }
+
 
   return (
     <form className="new-project-form">
@@ -29,17 +41,17 @@ export const NewProjectForm = () => {
             label="Description" 
             variant="outlined" 
         />
-        <QuestionBox/>
-        {questions.map((i, index) => ( <QuestionBox key={index} /> ))} 
+  
+        {questions.map((question, index) => ( 
+          <QuestionBox 
+            key={index}
+            id={questions[index].props.id}
+            deleteHandler={deleteQuestion}
+          /> ))} 
+
         <AddQuestionButton clickHandler={addQuestion} />
         
        
-        {/* <Grid container>
-            <Grid item xs={12}>
-
-            </Grid>
-        </Grid> */}
-
 
     </form>
   )

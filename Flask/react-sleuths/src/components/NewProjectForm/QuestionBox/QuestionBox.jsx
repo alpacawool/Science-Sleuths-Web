@@ -6,6 +6,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { DeleteQuestionButton } from '../DeleteQuestionButton/DeleteQuestionButton';
 
 
 export const QuestionBox = (props) => {
@@ -14,18 +15,28 @@ export const QuestionBox = (props) => {
 
   const handleTypeChange = event => setQuestionType(event.target.value);
 
+  function deleteHandler(id) {
+    props.deleteHandler(id);
+  }
+
   return (
     <Grid container
       spacing="1rem"
     >
-        <Grid item xs={12} sm={8}>
+        <Grid item xs={12} sm={1.2} md={1}>
+          <DeleteQuestionButton
+            deleteHandler={deleteHandler}
+            id = {props.id}
+          />
+        </Grid>
+        <Grid item xs={12} sm={7.8} md={8}>
             <InputLabel id="question-prompt-label">Question Prompt</InputLabel>
             <TextField 
                 fullWidth 
-                variant="outlined" 
+                variant="outlined"
             />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={12} sm={3}>
                 <InputLabel id="select-question-type-label">Type</InputLabel>
                 <Select fullWidth
                     labelId="select-queston-type-label"
