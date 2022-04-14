@@ -12,7 +12,11 @@ export const NewProjectForm = () => {
 
   // Initialize one question in array of questions
   const [questions, setQuestions] 
-    = useState([]);
+    = useState([
+      <QuestionBox 
+      id={v4(4)}
+    />
+    ]);
   
   function addQuestion() {
     setQuestions([...questions, 

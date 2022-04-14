@@ -1,0 +1,46 @@
+@use './../../../../utilities/css/colors';
+
+
+.MuiFormControlLabel-root {
+    padding-top:1rem;  
+    padding-left:4rem;
+}
+
+.MuiFormControlLabel-label {
+    color: colors.$form-text-label;
+}
+
+.MuiTextField-root {
+    & input:disabled {
+        background-color:colors.$form-fill-disabled;
+    }
+}
+
+@media screen and (max-width: 1500px) {
+    .MuiFormControlLabel-root {
+        padding-left:2rem;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .MuiFormControlLabel-root {
+        padding-left:1rem;
+    }
+
+    .MuiFormControlLabel-label {
+        display:none;
+    }
+    
+}
+
+@media screen and (max-width: 600px) {
+    .MuiFormControlLabel-root {
+        padding-left:0rem;
+    }
+
+    .MuiFormControlLabel-label {
+        display:inline-block;
+    }
+    
+}
+
