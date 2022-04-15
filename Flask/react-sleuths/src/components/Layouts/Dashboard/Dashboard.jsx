@@ -1,5 +1,5 @@
 /* 
-    Dashboard serves as a wraparound for the main content of the site.
+    Dashboard serves as a wraparound for the main content of the internal site.
     Layout typically contains items such as the header, footer, sidebar
     and other items not typically seen in the main content.
 */
@@ -69,7 +69,7 @@ export const Dashboard = ({children}) => {
             <div className="welcome">
                 <span>Hi, FIRST_NAME</span>
             </div>
-            <a href="#" className="logout">
+            <a href="/" className="logout">
               <LogoutIcon className="nav-icon"/>
               <span>Log off</span>
             </a>
