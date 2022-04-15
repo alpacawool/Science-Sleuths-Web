@@ -109,7 +109,7 @@ export const ProjectTable = () => {
   
   function rowClickHandler(project_id) {
     console.log(project_id);
-    navigate(`/projects/${project_id}`, {replace: true});
+    navigate(`/dash/projects/${project_id}`, {replace: true});
   }
 
   return (
@@ -126,7 +126,7 @@ export const ProjectTable = () => {
         sx = {{
           height: "max-content",
           "& .MuiTableRow-root:hover": {
-            backgroundColor: "#BEEAE6",
+            backgroundColor: "#fcf7f7",
             cursor: "pointer"
           }
         }}

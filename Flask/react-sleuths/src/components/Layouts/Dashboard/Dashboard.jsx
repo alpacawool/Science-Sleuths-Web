@@ -1,10 +1,10 @@
 /* 
-    Layout serves as a wraparound for the main content of the site.
+    Dashboard serves as a wraparound for the main content of the site.
     Layout typically contains items such as the header, footer, sidebar
-    and other items not typically seen in the main content. {children}
-    represents content in pages directory
+    and other items not typically seen in the main content.
 */
-import {useState} from 'react'
+import {useState} from 'react';
+import {Outlet} from 'react-router-dom';
 
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -14,9 +14,9 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CloseIcon from '@mui/icons-material/Close';
 
-import './Layout.scss'
+import './Dashboard.scss'
 
-export const Layout = ({children}) => {
+export const Dashboard = ({children}) => {
 
   /*
     Drawer logic flow - Drawer will apply collapsed CSS classes
@@ -25,7 +25,7 @@ export const Layout = ({children}) => {
   const [openDrawer, setOpenDrawer] = useState(true);
 
   return (
-    <div className="layout">
+    <div className="dashboard">
 
       <div className={`${openDrawer ? "" : "collapsed-header"} header`} >
         <div className="toggle-icon" onClick={() => setOpenDrawer(!openDrawer)}>
@@ -45,19 +45,19 @@ export const Layout = ({children}) => {
 
             <div className="logo">
               <ScienceIcon className="nav-icon"/>
-              <span>ScienceSleuths</span>
+              <span>Science Sleuths</span>
             </div>
 
             <ul className="nav">
               <li className="nav-item">
-                <a href="/projects" className="nav-item-link">
+                <a href="/dash/projects" className="nav-item-link">
                   <CreditCardIcon className="nav-icon"/>
                   <span>Projects</span>
                 </a>
               </li>
 
               <li className="nav-item">
-                <a href="/projects/new" className="nav-item-link">
+                <a href="/dash/projects/new" className="nav-item-link">
                   <CreateNewFolderIcon className="nav-icon"/>
                   <span>New Project</span>
                 </a>
@@ -77,7 +77,8 @@ export const Layout = ({children}) => {
         </aside>
        
         <div className={`${openDrawer ? "" : "collapsed-content"} content`} >
-          {children}
+          {/* Render content in pages with react-router */}
+          <Outlet />
         </div>
       </div>
     

@@ -1,5 +1,5 @@
-@use './../../utilities/css/colors';
-@use './../../utilities/css/sizes';
+@use './../../../utilities/css/colors';
+@use './../../../utilities/css/sizes';
 
 /* Size elements to fit */
 *,
@@ -8,7 +8,7 @@
     box-sizing:border-box;
 }
 
-.layout {
+.dashboard {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -155,7 +155,7 @@
 /* Tablet */
 @media screen and (max-width: 768px) {
 
-    .layout {
+    .dashboard {
 
         .header {
             padding-left:calc(sizes.$drawer-collapse-width + 1rem);
@@ -207,7 +207,7 @@
 /* Smartphone */
 @media screen and (max-width: 320px) {
 
-    .layout {
+    .dashboard {
 
         .header {
             padding-left: 0.5rem;

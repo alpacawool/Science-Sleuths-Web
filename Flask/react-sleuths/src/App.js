@@ -4,7 +4,8 @@ import Projects from './pages/Projects/Projects';
 import SingleProject from './pages/SingleProject/SingleProject';
 import Login from './pages/Login/Login';
 import NewProject from './pages/NewProject/NewProject';
-import { Layout } from './components/Layout/Layout';
+import { Dashboard } from './components/Layouts/Dashboard/Dashboard';
+import { ExternalView } from './components/Layouts/ExternalView/ExternalView';
 
 
 function App() {
@@ -24,26 +25,24 @@ function App() {
   return (
     <div className="App">
       {/* Frontend Routes using react-router */}
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            {/* Home page - Show all projects 
-                TODO: Show login page if NOT logged in*/}
-            <Route path="/">
-              <Route index element={<Projects />} />
-            </Route>
-            {/* Login page
-                TODO: User Authentication handling */}
-            <Route path="login" element={<Login />} />
-            {/* Project URL handling */}
-            <Route path="projects">
-              <Route index element = {<Projects />} />
-              <Route path =":projectid" element={<SingleProject />} />
-              <Route path="new" element={<NewProject />} />
-            </Route>
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      {/* TODO: User authentication and only view certain pages if signed in.. */}
+     <BrowserRouter>
+      <Routes>
+        {/* External */}
+        <Route path="/" element={<ExternalView />} >
+        <Route path="/" element={<Login />} />
+          <Route path="login" element={<Login />} />
+        </Route>
+        {/* Internal */}
+        <Route path="/dash" element={<Dashboard />}>
+          <Route path="/dash" element={<Projects />} />
+          <Route path="/dash/projects" element={<Projects />} />
+          <Route path="/dash/projects/:id" element={<SingleProject />} />
+          <Route path="/dash/projects/new" element={<NewProject />} />
+        </Route>
+      </Routes>
+     
+     </BrowserRouter>
     </div>
   );
 }
