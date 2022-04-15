@@ -2,8 +2,11 @@
 
 
 .submit-form-button {
-    display: flex;
+    all: unset;
+    display: block;
+    width: 100%;
     align-items: center;
+    text-align: center;
     background-color:colors.$primary-color-darker;
     color:colors.$primary-color-text;
     justify-content: center;
@@ -17,9 +20,5 @@
         background-color:colors.$primary-color-darkest;
         color:colors.$primary-color-text;
         cursor:pointer;
-    }
-
-    .add-icon {
-        padding:0.05em;
     }
 }

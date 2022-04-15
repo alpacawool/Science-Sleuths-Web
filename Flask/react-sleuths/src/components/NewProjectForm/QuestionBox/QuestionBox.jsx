@@ -24,6 +24,7 @@ export const QuestionBox = (props) => {
     console.log(props)
   }
 
+
   return (
     <div className="question-box">
       <Grid container
@@ -32,8 +33,12 @@ export const QuestionBox = (props) => {
       >
      
           <Grid item xs={12} sm={7.8} md={8}>
-              <InputLabel id="question-prompt-label">Question Prompt</InputLabel>
-              <TextField 
+              <InputLabel id="question-prompt-label">Question Prompt {props.index+1}</InputLabel>
+              <TextField
+                  defaultValue={props.formValues.test}
+                  /* Sample function of using parent function passed down to update the state.
+                  onChange
+                    ={event => props.setFormValue('description', event.target.value)} */
                   fullWidth 
                   variant="outlined"
                   multiline={true}

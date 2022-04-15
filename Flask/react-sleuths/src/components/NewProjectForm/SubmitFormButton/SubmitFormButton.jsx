@@ -4,8 +4,11 @@ import './SubmitFormButton.scss';
 
 export const SubmitFormButton = (props) => {
   return (
-    <div className="submit-form-button" onClick={props.clickHandler}>
+    <button 
+      className="submit-form-button" 
+      type="submit" 
+      onClick={props.clickHandler}>
       Submit
-    </div>
+    </button>
   )
 }
