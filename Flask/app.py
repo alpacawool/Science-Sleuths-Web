@@ -15,10 +15,17 @@ def index():
         "hello" : "Science Sleuths : Citizen Science App for Kids"
     }
 
+# Serve React Frontend
 @app.route('/')
 @cross_origin()
 def serve():
     return send_from_directory(app.static_folder, 'index.html')
+
+# Force use of react-router for routing frontend pages
+# https://stackoverflow.com/questions/30620276/
+@app.errorhandler(404)
+def not_found(e):
+    return app.send_static_file('index.html')
 
 if __name__ == '__main__':
     app.run()

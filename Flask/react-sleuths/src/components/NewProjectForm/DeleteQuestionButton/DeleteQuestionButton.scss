@@ -1,0 +1,42 @@
+@use './../../../utilities/css/colors';
+
+
+.delete-question-button {
+    display: flex;
+    align-items: center;
+    background-color:colors.$primary-warning-light;
+    color:colors.$primary-color-text;
+    justify-content: center;
+    height:3rem;
+    border-radius:0.3em;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight:600;
+
+    &:hover {
+        background-color:colors.$primary-warning-color;
+        color:colors.$primary-color-text;
+        cursor:pointer;
+    }
+
+    .delete-icon {
+        padding-right:0.1rem;
+    }
+
+}
+
+@media screen and (max-width: 1500px) {
+    .delete-question-button {
+        span {
+            display:none;
+        }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .delete-question-button {
+        span {
+            display:inline-block;
+        }
+    }
+}

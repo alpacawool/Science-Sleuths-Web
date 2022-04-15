@@ -1,0 +1,14 @@
+.name-col {
+    font-weight:600;
+}
+
+/* Truncate description so it doesn't take whole page 
+ If more columns are added, the width vw unit below can be adjusted */
+.description-col {
+    display: block;
+    width: 60vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+

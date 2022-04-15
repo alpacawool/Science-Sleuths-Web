@@ -1,0 +1,39 @@
+@use './../../utilities/css/colors';
+
+.new-project-form {
+    height: 100vh;
+    padding-right:1em;
+    z-index:-800;
+
+    /* Project Name Field */
+    .MuiTextField-root:first-child {
+        background-color:colors.$primary-color;
+        border-radius:0.4em;
+        padding: 1.3em;
+
+        /* Text that gets typed */
+        input {
+            font-size:1.5rem;
+            color:colors.$white;
+        }
+            
+        /* Placeholder text */
+        & ::placeholder {
+            color:colors.$primary-color-lighter;
+        }
+
+    } 
+
+}
+
+
+@media screen and (max-width: 768px) {
+    .new-project-form {
+        .MuiTextField-root:first-child {
+            input {
+                font-size:1rem;
+                font-weight:500;
+            }
+        }
+    }
+}
