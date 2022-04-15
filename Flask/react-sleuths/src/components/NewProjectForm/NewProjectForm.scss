@@ -1,9 +1,9 @@
 @use './../../utilities/css/colors';
 
 .new-project-form {
-    background-color:white;
     height: 100vh;
     padding-right:1em;
+    z-index:-800;
 }
 
 /* Project Name Field */
@@ -25,3 +25,12 @@
 
 } 
 
+
+@media screen and (max-width: 768px) {
+    .MuiTextField-root:first-child {
+        input {
+            font-size:1rem;
+            font-weight:500;
+        }
+    }
+}

@@ -58,6 +58,7 @@
             background-color: colors.$primary-color;
             width:sizes.$drawer-width;
             transition: all 0.7s ease-in-out;
+            z-index:1500;
 
             .logo {
                 height: sizes.$header-height;
@@ -94,6 +95,13 @@
                 }
             }
 
+            .welcome {
+                text-align:center;
+                font-weight:400;
+                text-transform:lowercase;
+                color:colors.$primary-color-light;
+            }
+
             .logout {
                 background-color:colors.$primary-color-dark;
                 color: colors.$primary-color-text;
@@ -120,6 +128,10 @@
 
             .logout {
                 margin:0.3em;
+            }
+
+            .welcome {
+                display:none;
             }
         }
 
@@ -167,6 +179,10 @@
 
                 .logout {
                     margin:0.2em;
+                }
+
+                .welcome {
+                    display:none;
                 }
             }
 

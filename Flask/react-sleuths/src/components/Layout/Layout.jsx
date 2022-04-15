@@ -65,10 +65,15 @@ export const Layout = ({children}) => {
 
             </ul>
           </div>
-          <a href="#" className="logout">
-            <LogoutIcon className="nav-icon"/>
-            <span>Log off</span>
-          </a>
+          <div>
+            <div className="welcome">
+                <span>Hi, FIRST_NAME</span>
+            </div>
+            <a href="#" className="logout">
+              <LogoutIcon className="nav-icon"/>
+              <span>Log off</span>
+            </a>
+          </div>
         </aside>
        
         <div className={`${openDrawer ? "" : "collapsed-content"} content`} >
