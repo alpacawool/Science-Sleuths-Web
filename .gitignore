@@ -8,3 +8,6 @@ node_modules/
 package-lock.json
 *.log
 *.gz
+
+# Firestore Admin Key
+serviceAccountKey.json
