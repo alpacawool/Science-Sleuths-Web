@@ -1,8 +1,13 @@
 import React from 'react'
+import { DetailTab } from '../../components/DetailTab/DetailTab'
 
 const SingleProject = () => {
   return (
-    <div>SingleProject</div>
+    <div>
+      <h1>Project Name</h1>
+      <p>Description about the project</p>
+      <DetailTab />
+    </div>
   )
 }
 

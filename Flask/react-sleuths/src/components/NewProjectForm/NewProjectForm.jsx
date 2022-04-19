@@ -6,9 +6,9 @@ import Input from "@mui/material/TextField";
 
 import { AddQuestionButton } from './AddQuestionButton/AddQuestionButton';
 import { QuestionBox } from './QuestionBox/QuestionBox';
+import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
 
 import './NewProjectForm.scss'
-import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
 
 export const NewProjectForm = () => {
 
