@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from typing import List
+import csv
 
 load_dotenv()
 
@@ -19,6 +20,8 @@ MULTIPLE_CHOICE = 3
 TEXT = 4
 DATETIME = 5
 
+
+# TODO: Add error checking for functions (if db cannot be updated, return msg)
 
 class InvalidQuestionTypeError(Exception):
     pass
@@ -79,12 +82,16 @@ class Teacher(User):
     Users.
     """
     def __init__(self, first_name: str, last_name: str, email: str,
-                 hashed_pwd: str, is_admin: bool = True):
+                 hashed_pwd: str, is_admin: bool = True,
+                 owned_projects: List = None):
         super().__init__(first_name, last_name)
         self.email = email
         self.is_admin = is_admin
         self.hashed_pwd = hashed_pwd
-        self.owned_projects = []
+        if owned_projects is None:
+            self.owned_projects = []
+        else:
+            self.owned_projects = owned_projects
 
     @staticmethod
     def from_dict(source: dict) -> "Teacher":
@@ -153,11 +160,15 @@ class Project:
     A class representing a project document in the top-level collection
     Projects.
     """
-    def __init__(self, owner_id: str, title: str, description: str):
+    def __init__(self, owner_id: str, title: str, description: str,
+                 questions: List = None):
         self.owner_id = owner_id
         self.title = title
         self.description = description
-        self.questions = []  # contains Question objects
+        if questions is None:
+            self.questions = []  # contains Question objects
+        else:
+            self.questions = questions
 
     @staticmethod
     def from_dict(source: dict) -> "Project":
@@ -188,9 +199,6 @@ class Project:
             if question.question_num == question_num:
                 self.questions.remove(question)
 
-    def edit_question(self, question_num: int):
-        pass
-
     def get_owner_id(self):
         return self.owner_id
 
@@ -212,7 +220,10 @@ class Question:
         self.question_num = question_num
         self.prompt = prompt
         self.type = question_type
-        self.choices = choices
+        if choices is None:
+            self.choices = []
+        else:
+            self.choices = choices
         self.range_min = range_min
         self.range_max = range_max
 
@@ -241,6 +252,7 @@ class Question:
             u'range_min': self.range_min,
             u'range_max': self.range_max
         }
+
         return dest
 
     def set_choices(self, choices: List):
@@ -265,26 +277,27 @@ class Observation:
     A class representing an observation document in the sub-collection
     Observations.
     """
-    def __init__(self, author_id: str, first_name: str, last_name: str,
-                 title: str):
+    def __init__(self, project_id: str, author_id: str, first_name: str,
+                 last_name: str, title: str, date_time=None):
+        self.project_id = project_id
         self.author_id = author_id
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
-        self.datetime = datetime.datetime.now()
+        self.datetime = date_time  # set by calling function upon creation
         self.responses = []  # contains response objects
 
     @staticmethod
     def from_dict(source: dict) -> "Observation":
-        observation = Observation(source[u'author_id'], source[u'first_name'],
-                                  source[u'last_name'], source[u'title'])
+        observation = Observation(source[u'project_id'], source[u'author_id'],
+                                  source[u'first_name'], source[u'last_name'],
+                                  source[u'title'])
 
-        # TODO: proper formatting of datetime from dict
         if u'datetime' in source:
             observation.datetime = source[u'datetime']
 
-        if u'observation' in observation:
-            for response_dict in source[u'observation']:
+        if u'responses' in source:
+            for response_dict in source[u'responses']:
                 response = Response.from_dict(response_dict)
                 observation.responses.append(response)
 
@@ -292,14 +305,15 @@ class Observation:
 
     def to_dict(self) -> dict:
         dest = {
+            u'project_id': self.project_id,
             u'author_id': self.author_id,
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
             u'datetime': self.datetime,
-            u'observation': [response.to_dict() for response in
-                             self.responses]
+            u'responses': [response.to_dict() for response in self.responses]
         }
+
         return dest
 
     def add_response(self, response: "Response"):
@@ -313,8 +327,8 @@ class Observation:
             if response.question_num == question_num:
                 self.responses.remove(response)
 
-    def edit_response(self, question_num: int):
-        pass
+    def set_datetime(self, date_time):
+        self.datetime = date_time
 
 
 class Response:
@@ -340,6 +354,7 @@ class Response:
             u'type': self.type,
             u'response': self.response
         }
+
         return dest
 
     def edit_response(self, response):
@@ -357,6 +372,7 @@ def create_student(student: "Student") -> str:
     """
     db = firestore.client()
     student_ref = db.collection(u'Users').add(student.to_dict())
+
     return student_ref[1].id
 
 
@@ -368,7 +384,41 @@ def create_teacher(teacher: "Teacher") -> str:
     """
     db = firestore.client()
     teacher_ref = db.collection(u'Users').add(teacher.to_dict())
+
     return teacher_ref[1].id
+
+
+def modify_teacher_email(user_id: str, email: str):
+    """
+    Modifies the teacher's email address for the given user_id.
+    :param user_id: the user_id of the teacher to modify
+    :param email: the new email address
+    """
+    db = firestore.client()
+
+    return db.collection(u'Users').document(user_id).update({u'email': email})
+
+
+def modify_teacher_hashed_pwd(user_id: str, hashed_pwd: str):
+    """
+    Modifies the teacher's hashed_pwd for the given user_id.
+    :param user_id: the user_id of the teacher to modify
+    :param hashed_pwd: the new hashed password
+    """
+    db = firestore.client()
+
+    return db.collection(u'Users').document(user_id)\
+        .update({u'hashed_pwd': hashed_pwd})
+
+
+def remove_user(user_id: str):
+    """
+    Takes a user_id and removes the user from Firestore db
+    :param user_id: the user_id to delete
+    """
+    db = firestore.client()
+
+    return db.collection(u'Users').document(user_id).delete()
 
 
 def create_project(project: "Project") -> str:
@@ -386,11 +436,126 @@ def create_project(project: "Project") -> str:
     # create and add project summary to the project owner
     project_summary = ProjectSummary(project_id, project.get_title(),
                                      project.get_description())
-    db.collection(u'Users').document(project.get_owner_id())\
+    db.collection(u'Users').document(project.get_owner_id()) \
         .update({u'owned_projects': firestore
                 .ArrayUnion([project_summary.to_dict()])})
 
     return project_ref.id
+
+
+def _delete_collection(coll_ref, batch_size=50):
+    """
+    Deletes a collection recursively by sending individual delete requests.
+    :param coll_ref:
+    :param batch_size:
+    :return:
+    """
+    docs = coll_ref.limit(batch_size).stream()
+    deleted = 0
+
+    for doc in docs:
+        doc.reference.delete()
+        deleted = deleted + 1
+
+    if deleted >= batch_size:
+        return _delete_collection(coll_ref, batch_size)
+
+
+def delete_project(project_id: str, owner_id: str):
+    """
+    Takes a project_id and deletes it from Firestore db. Also deletes the
+    subcollection Observations and any existing documents in it along with the
+    project summary from the owner_id.
+    :param project_id: the project_id to delete
+    :param owner_id: the user_id of the owner of the project to delete
+    """
+    db = firestore.client()
+
+    # delete all docs in the subcollection Observations from the project
+    obs_ref = db.collection(u'Projects').document(project_id)\
+        .collection(u'Observations')
+    _delete_collection(obs_ref)
+
+    # delete the project
+    db.collection(u'Projects').document(project_id).delete()
+
+    # query for the project summary from the owner
+    proj_owner = db.collection(u'Users').document(owner_id).get()
+    if proj_owner.exists:
+        owned_projects = proj_owner.to_dict()['owned_projects']
+        for project in owned_projects:
+            if project['project_id'] == project_id:
+                # remove the project summary from owned_projects
+                owned_projects.remove(project)
+        # delete the project summary from the owner
+        db.collection(u'Users').document(owner_id).\
+            update({u'owned_projects': owned_projects})
+    else:
+        print(u'No such user exists!')
+
+
+def modify_project_title(project_id: str, title: str):
+    """
+    Modifies the project title.
+    :param project_id: the project_id of the project to modify
+    :param title: the new title
+    """
+    db = firestore.client()
+
+    db.collection(u'Projects').document(project_id).update({u'title': title})
+
+
+def modify_project_description(project_id: str, description: str):
+    """
+    Modifies the project description.
+    :param project_id: the project_id of the project to modify
+    :param description: the new description
+    """
+    db = firestore.client()
+
+    db.collection(u'Projects').document(project_id)\
+        .update({u'description': description})
+
+
+def add_question_to_project(project_id: str, question: "Question"):
+    """
+    Adds the given Question instance to the project with project_id.
+    :param project_id: the project_id to add the question to
+    :param question: the Question instance to add
+    """
+    db = firestore.client()
+
+    db.collection(u'Projects').document(project_id) \
+        .update({u'questions': firestore
+                .ArrayUnion([question.to_dict()])})
+
+
+def remove_question_from_project(project_id: str, question_num: int):
+    """
+    Deletes the specified question_num from the project_id.
+    :param project_id: the project_id of the project to remove from
+    :param question_num: the number of the question to remove
+    """
+    db = firestore.client()
+
+    # query for the project
+    proj = db.collection(u'Projects').document(project_id).get()
+    if proj.exists:
+        questions = proj.to_dict()['questions']
+        question_found = False
+        for question in questions:
+            if question['question_num'] == question_num:
+                # remove the question from questions
+                questions.remove(question)
+                question_found = True
+        if question_found is False:
+            print(u'No such question exists!')
+            return
+        # delete the question from the project
+        db.collection(u'Projects').document(project_id). \
+            update({u'questions': questions})
+    else:
+        print(u'No such project exists!')
 
 
 def create_observation(project_id: str, observation: "Observation") -> str:
@@ -402,14 +567,88 @@ def create_observation(project_id: str, observation: "Observation") -> str:
     :return: observation_id
     """
     db = firestore.client()
-    obs_ref = db.collection(u'Projects').document(project_id)\
+    # set the observation datetime to current datetime
+    observation.set_datetime(datetime.datetime.now())
+    obs_ref = db.collection(u'Projects').document(project_id) \
         .collection(u'Observations').add(observation.to_dict())
+
     return obs_ref[1].id
+
+
+def get_all_project_details(user_id: str) -> List["ProjectSummary"]:
+    """
+    Retrieves all project details owned by the specified user_id.
+    :param user_id: the user_id
+    :return: A list of ProjectSummary objects
+    """
+    db = firestore.client()
+
+    # query for the user
+    proj_owner = db.collection(u'Users').document(user_id).get()
+    if proj_owner.exists:
+        owned_projects = []
+        for project in proj_owner.to_dict()[u'owned_projects']:
+            project_summary = ProjectSummary.from_dict(project)
+            owned_projects.append(project_summary)
+        return owned_projects
+    print(u'No such user exists!')
+
+
+def get_all_project_observations(project_id: str) -> List["Observation"]:
+    """
+    Retrieves all observations in a given project_id
+    :param project_id: the project_id
+    :return: a list of Observation objects
+    """
+    db = firestore.client()
+
+    obs_stream = db.collection(u'Projects').document(project_id)\
+        .collection(u'Observations').stream()
+    observations = []
+    for obs in obs_stream:
+        # convert to Observation
+        observations.append(Observation.from_dict(obs.to_dict()))
+    return observations
+
+
+def write_project_to_file(project_id: str, filepath: str):
+    """
+    Writes project to a csv file with the chosen filename.
+    :param project_id: the project_id of the project
+    :param filepath: the filepath to write to
+    :return:
+    """
+    db = firestore.client()
+
+    obs_stream = db.collection(u'Projects').document(project_id)\
+        .collection(u'Observations').stream()
+
+    title = [{"project_id": project_id}]
+    header = ['author_id', 'first_name', 'last_name', 'title', 'datetime',
+              'question_num', 'type', 'response']
+    with open(filepath, 'w', encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(title)
+        writer.writerow(header)
+
+        for obs in obs_stream:
+            obs_dict = obs.to_dict()
+            for response in obs_dict['responses']:
+                data = []
+                data.append(obs_dict['author_id'])
+                data.append(obs_dict['first_name'])
+                data.append(obs_dict['last_name'])
+                data.append(obs_dict['title'])
+                data.append(obs_dict['datetime'])
+                data.append(response['question_num'])
+                data.append(response['type'])
+                data.append(response['response'])
+                writer.writerow(data)
 
 
 def add_example_data():
     """
-    Creates some sample data using the classes/functions above.
+    Creates some example data using the classes/functions above.
     """
     # create & add three students
     num_students = 3
@@ -428,6 +667,7 @@ def add_example_data():
               "davidjohnson@test.com"]
     hashed_pwds = ["BLAH1234", "abcdefg", "somehash"]
     teacher_ids = []
+
     for i in range(num_teachers):
         teacher = Teacher(teacher_first_names[i], teacher_last_names[i],
                           emails[i], hashed_pwds[i])
@@ -468,6 +708,14 @@ def add_example_data():
                                           choices[i][j]))
         project_ids.append(create_project(project))
 
+    # create one more project for testing
+    project = Project(teacher_ids[2], "A testing testful test",
+                      "For testing to see if ArrayUnion works")
+    for i in range(num_questions):
+        project.add_question(Question(i + 1, prompts[0][i], types[0][i],
+                                      choices[0][i]))
+    project_ids.append(create_project(project))
+
     project_responses = [[["Sunny...", 4.25, 3],
                           ["Rainy...", 2.74, 8],
                           ["Cloudy...", 24.2, 12]],
@@ -479,14 +727,14 @@ def add_example_data():
                           ["Nothing", 8, True]]]
 
     # create one observation per student per project
-    for i in range(len(project_ids)):
+    for i in range(num_projects):
         for j in range(len(student_ids)):
-            observation = Observation(student_ids[j],
+            observation = Observation(project_ids[i], student_ids[j],
                                       student_first_names[j],
                                       student_last_names[j],
                                       "test title")
             # number of questions per observation
-            for k in range(3):
+            for k in range(num_questions):
                 response = Response(k + 1, types[i][k],
                                     project_responses[i][j][k])
                 observation.add_response(response)
@@ -494,4 +742,6 @@ def add_example_data():
 
 
 if __name__ == "__main__":
-    pass
+    user_id = "Iw9BIoRWI4cVUb9BHTDI"
+    project_id = "7RPNXZgpXeXSNHSKEaEe"
+
