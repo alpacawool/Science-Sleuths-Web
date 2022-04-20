@@ -1,0 +1,105 @@
+@use './../../utilities/css/colors';
+
+.single-project-container {
+    
+    .description-container {
+
+        .description-paragraph-title{
+            text-transform: uppercase;
+            font-weight:500;
+            color: colors.$divider-color;
+
+        }
+
+        .description-paragraph {
+            max-height:100px;
+            overflow-y:auto;
+            padding-right:1em; 
+            
+        }
+    
+        // Force scrollbar
+        ::-webkit-scrollbar {
+            -webkit-appearance: none;
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            border-radius: 5px;
+            background-color: rgba(0,0,0,.5);
+            -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+        }
+    }
+
+    
+    .project-code-container {
+        display:flex;
+        width:300px;
+        justify-content: center;
+        align-items:center;
+        padding-right:0.5rem;
+
+        .project-code-title {
+            text-transform: uppercase;
+            padding:0.5em;
+            color: colors.$secondary-text-color;
+            font-weight:500;
+        }
+
+        .project-code-string {
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:0.5em;
+            border: 2px solid colors.$divider-color;
+            border-radius: 0.4rem;
+            font-family: "Lucida Console", "Courier New", monospace;
+            font-weight:bold;
+            color:colors.$form-text-label;
+
+            .project-code-icon {
+                margin-right:0.5rem;
+                color:colors.$divider-color;
+            }
+        
+        }
+    }
+
+    .download-csv-button {
+        all: unset;
+        display: flex;
+        width:300px;
+        align-items: center;
+        text-align: center;
+        background-color:colors.$primary-color-darker;
+        color:colors.$primary-color-text;
+        justify-content: center;
+        height:3rem;
+        border-radius:0.3em;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        font-weight:800;
+    
+        &:hover {
+            background-color:colors.$primary-color-darkest;
+            color:colors.$primary-color-text;
+            cursor:pointer;
+        }
+
+        .download-csv-icon{
+            margin-right:0.4em;
+        }
+    }
+
+}
+
+@media screen and (max-width: 450px) {
+    .single-project-container {
+        .project-code-container {
+            width:90vw;
+        }
+        .download-csv-button {
+            width:90vw;
+        }
+    }
+}

@@ -6,7 +6,7 @@ import {TabContext, TabList, TabPanel} from '@mui/lab'
 import './DetailTab.scss'
 import { ResponseTable } from './ResponseTable/ResponseTable'
 
-export const DetailTab = () => {
+export const DetailTab = (props) => {
   const [currentTab, setCurrentTab] = useState('1');
   
   const handleChange = (event, newTab) => {
@@ -28,7 +28,10 @@ export const DetailTab = () => {
            
             </Box>
             <TabPanel value='1'>
-              <ResponseTable />
+              <ResponseTable
+                questions={props.questions}
+                observations={props.observations}
+              />
             </TabPanel>
 
             <TabPanel value='2'>

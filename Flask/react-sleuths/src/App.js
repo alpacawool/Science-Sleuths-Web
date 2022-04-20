@@ -1,4 +1,3 @@
-import {useState, useEffect} from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Projects from './pages/Projects/Projects';
 import SingleProject from './pages/SingleProject/SingleProject';
@@ -10,18 +9,6 @@ import { ExternalView } from './components/Layouts/ExternalView/ExternalView';
 
 
 function App() {
-
-  const [state, setState] = useState({})
-
-  // Example of using useEffect to get JSON data from Flask
-  useEffect(() => {
-    fetch("/hello").then(response => {
-      if (response.status === 200) {
-        return response.json()
-      }
-    }).then(data => setState(data))
-    .then(error => console.log(error))
-  }, [])
 
   return (
     <div className="App">
@@ -39,7 +26,7 @@ function App() {
         <Route path="/dash" element={<Dashboard />}>
           <Route path="/dash" element={<Projects />} />
           <Route path="/dash/projects" element={<Projects />} />
-          <Route path="/dash/projects/:id" element={<SingleProject />} />
+          <Route path="/dash/projects/:project_id" element={<SingleProject />} />
           <Route path="/dash/projects/new" element={<NewProject />} />
         </Route>
       </Routes>
