@@ -575,6 +575,20 @@ def create_observation(project_id: str, observation: "Observation") -> str:
     return obs_ref[1].id
 
 
+def get_project(project_id: str) -> "Project":
+    """
+    Retrieves the project specified by the project_id.
+    :param project_id: the project_id
+    :return: a Project object
+    """
+    db = firestore.client()
+
+    project = db.collection(u'Projects').document(project_id).get()
+    if project.exists:
+        return Project.from_dict(project.to_dict())
+    print(u'No such project exists!')
+
+
 def get_all_project_details(user_id: str) -> List["ProjectSummary"]:
     """
     Retrieves all project details owned by the specified user_id.
@@ -742,6 +756,10 @@ def add_example_data():
 
 
 if __name__ == "__main__":
+    # some test data
     user_id = "Iw9BIoRWI4cVUb9BHTDI"
     project_id = "7RPNXZgpXeXSNHSKEaEe"
+    project = get_project(project_id)
+    for question in project.questions:
+        print(question.to_dict())
 
