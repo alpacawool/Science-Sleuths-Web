@@ -22,3 +22,13 @@
         text-overflow: ellipsis;
     }
 }
+
+
+@media screen and (max-width: 450px) {
+    .response-table-container {
+
+        .truncate-text {
+            max-width:50vw;
+        }
+    }
+}
