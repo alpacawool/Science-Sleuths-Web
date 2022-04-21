@@ -1,3 +1,7 @@
+/**
+ * NewProjectForm.jsx
+ * Form for creating a new project
+ */
 import {useState} from 'react';
 import {v4} from 'uuid'
 
@@ -6,9 +10,9 @@ import Input from "@mui/material/TextField";
 
 import { AddQuestionButton } from './AddQuestionButton/AddQuestionButton';
 import { QuestionBox } from './QuestionBox/QuestionBox';
+import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
 
 import './NewProjectForm.scss'
-import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
 
 export const NewProjectForm = () => {
 

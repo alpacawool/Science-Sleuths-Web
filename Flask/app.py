@@ -1,10 +1,9 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
-import os
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+import json
 from dotenv import load_dotenv
+from models import *
+
 
 
 app = Flask(
@@ -20,6 +19,64 @@ def index():
     return {
         "hello" : "Science Sleuths : Citizen Science App for Kids"
     }
+
+@app.route('/users/<string:user_id>/projects', methods=['GET'])
+def get_projects(user_id):
+    '''
+    Returns list of projects owned by the user
+    param user_id: ID of user
+    '''
+    owned_projects = get_all_project_details(user_id)
+    if (owned_projects != None):
+        return(json.dumps(owned_projects, default=vars))
+    return {}
+
+@app.route('/projects/<string:project_id>', methods=['GET'])
+def get_single_project(project_id):
+    '''
+    Returns single project base info including
+    - owner_id, description, questions, question info
+    param project_id: ID of project
+    '''
+    single_project = get_project(project_id)
+    if (single_project != None):
+        return(json.dumps(single_project, default=vars))
+    return {}
+
+@app.route('/projects/<string:project_id>/observations', methods=['GET'])
+def get_project_observations(project_id):
+    '''
+    Returns observations list of a single project
+    param project_id: ID of project
+    '''
+    observation_list = get_all_project_observations(project_id)
+
+    if (observation_list != None):
+        observation_responses = []
+        for i in range(0, len(observation_list)):
+            observation = {
+                'author_id' : observation_list[i].author_id,
+                # Datetime has an issue being serialized, converting to string
+                'datetime' : str(observation_list[i].datetime),
+                'first_name' : observation_list[i].first_name,
+                'last_name': observation_list[i].last_name,
+                'project_id': observation_list[i].project_id,
+                'responses' : [],
+                'title': observation_list[i].title
+            }
+
+            for j in range(0, len(observation_list[i].responses)):
+                print(observation_list[i].responses[j].response)
+                response = {
+                    'question_num' : observation_list[i].responses[j].question_num,
+                    'response' : str(observation_list[i].responses[j].response),
+                    'type' :  observation_list[i].responses[j].type
+                }
+                observation['responses'].append(response)
+
+            observation_responses.append(observation)
+        return(json.dumps(observation_responses))
+    return {}
 
 # Serve React Frontend
 @app.route('/')

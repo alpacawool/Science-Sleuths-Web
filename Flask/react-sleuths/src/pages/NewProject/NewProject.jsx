@@ -1,4 +1,7 @@
-import React from 'react'
+/**
+ * NewProject.jsx
+ * Represents form for creating a new project for a single user
+ */
 import { NewProjectForm } from '../../components/NewProjectForm/NewProjectForm'
 
 const NewProject = () => {

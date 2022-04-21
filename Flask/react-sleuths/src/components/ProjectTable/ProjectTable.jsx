@@ -15,100 +15,11 @@ import Paper from "@mui/material/Paper";
 
 import './ProjectTable.scss'
 
-export const ProjectTable = () => {
-
-  // Test table data
-  function createData(id, name, description) {
-    return {id, name, description}
-  }
-  const rows = [
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-    createData(1, "Lorem ipsum dolor",
-              `"Aliquam varius viverra ligula, nec dictum leo. 
-              Vestibulum sodales faucibus lectus, condimentum finibus turpis.
-              Fusce ultricies rhoncus pulvinar. Maecenas id laoreet eros.
-              Morbi sapien felis, interdum a vestibulum eu, rhoncus dapibus sapien. 
-              Phasellus facilisis at nisl dignissim ultrices. Proin non turpis fermentum, 
-              elementum turpis at, tempus neque. Sed in dapibus purus. 
-              Donec molestie nunc id consectetur efficitur."`),
-  ];
-
+export const ProjectTable = (props) => {
 
   let navigate = useNavigate();
   
   function rowClickHandler(project_id) {
-    console.log(project_id);
     navigate(`/dash/projects/${project_id}`, {replace: true});
   }
 
@@ -132,22 +43,24 @@ export const ProjectTable = () => {
         }}
       >
         <TableHead>
-          <TableCell>Name</TableCell>
-          <TableCell>Description</TableCell>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Description</TableCell>
+          </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {props.projects.map((row) => (
             <TableRow 
-              key={row.id} 
+              key={row.project_id} 
               className="project-rows" 
-              onClick={()=>rowClickHandler(row.id)}
+              onClick={()=>rowClickHandler(row.project_id)}
             >
               <TableCell component="th" scope="row">
                 <div className="name-col">
-                  {row.name}
+                  {row.title}
                 </div>
               </TableCell>
-              <TableCell className>
+              <TableCell>
                 <div className="description-col">
                   {row.description}
                 </div>

@@ -1,8 +1,9 @@
-import React from 'react'
+/**
+ * Login.jsx
+ * Login page where user will login to access dashboard
+ */
 import { useNavigate } from "react-router-dom"
-
 import TextField from "@mui/material/TextField";
-
 import './Login.scss'
 
 const Login = () => {

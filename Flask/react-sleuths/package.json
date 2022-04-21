@@ -7,6 +7,7 @@
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.6.1",
+    "@mui/lab": "^5.0.0-alpha.78",
     "@mui/material": "^5.6.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^12.1.4",
@@ -21,10 +22,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts build",
+    "test": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts test",
+    "eject": "SET NODE_OPTIONS=--openssl-legacy-provider && react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

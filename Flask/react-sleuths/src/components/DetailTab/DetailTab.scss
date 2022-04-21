@@ -1,0 +1,27 @@
+@use './../../utilities/css/colors';
+
+.detail-tab-container {
+    /* Tab switches */
+    .MuiTab-root {
+        color:colors.$primary-color-darkest;
+        text-transform: none;
+        font-family: 'DM Sans', sans-serif;
+        font-weight:500;
+    }
+    /* Selected Tab */
+    .Mui-selected {
+        background-color:colors.$primary-color-light;
+        color:colors.$primary-text-color;
+        border-radius:0.4em;
+        margin:0.4rem;
+        padding:0.5rem;
+    }
+
+    /* Tab container */
+    .MuiTabs-root {
+        background-color: colors.$primary-color;
+        border-radius:0.4em;
+        width:max-content;
+    }
+
+}
