@@ -36,7 +36,9 @@ export const ResponseTable = (props) => {
               <TableCell align="left">Title</TableCell>
               {props.questions.map((cell, index) =>
               <TableCell>
-                Q{index+1}. {cell.prompt}
+                <span className="truncate-text">
+                  Q{index+1}. {cell.prompt}
+                </span>
               </TableCell>)}
             </TableRow>
           </TableHead>
@@ -53,7 +55,9 @@ export const ResponseTable = (props) => {
                    }}
                    >
                 <div className="name-col">
-                {row.first_name} {row.last_name}
+                  <span className='truncate-text'>
+                    {row.first_name} {row.last_name}
+                  </span>
                 </div>
                 </TableCell>
                 <TableCell
@@ -67,7 +71,9 @@ export const ResponseTable = (props) => {
          
                 <TableCell>
                   <div className="title-col">
+                    <span className='truncate-text'>
                     {row.title}
+                    </span>
                   </div>
                 </TableCell>
                   {/* Log individual responses */}
@@ -75,7 +81,7 @@ export const ResponseTable = (props) => {
                   <TableCell>
                     {cell.type === 3 ?
                     // Check if multiple choice question (TYPE 3)
-                    <span>
+                    <span className='truncate-text'>
                     {props.questions[cell.question_num-1].choices[cell.response]}
                     </span>
                     : 
@@ -84,16 +90,16 @@ export const ResponseTable = (props) => {
 
                     {cell.type === 5 ?
                     // Check if cell is date and format (TYPE 5)
-                    <span>
+                    <span className='truncate-text'>
                       {formatDate(cell.response)}
                     </span>
                     : 
                       null
                     }
 
-                    {cell.type != 3 && cell.type != 5 ?
+                    {cell.type !== 3 && cell.type !== 5 ?
                     // All other cells
-                    <span>
+                    <span className='truncate-text'>
                       {cell.response}
                     </span>
                     : 

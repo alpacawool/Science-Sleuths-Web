@@ -10,7 +10,7 @@
  If more columns are added, the width vw unit below can be adjusted */
 .description-col {
     display: block;
-    width: 60vw;
+    max-width: 60vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
