@@ -1,3 +1,7 @@
+/**
+ * NewProjectForm.jsx
+ * Form for creating a new project
+ */
 import {useState} from 'react';
 import {v4} from 'uuid'
 

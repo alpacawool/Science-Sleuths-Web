@@ -1,3 +1,7 @@
+/**
+ * ResponseTable.jsx
+ * Displays list of observations for a single project
+ */
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";

@@ -1,10 +1,14 @@
+/**
+ * Projects.jsx
+ * Displays list of projects for current user
+ */
 import {useEffect, useState} from 'react'
 import { ProjectTable } from '../../components/ProjectTable/ProjectTable'
 
 const Projects = () => {
 
   const [projects, setProjects] = useState({})
-
+  // Currently using placeholder user_id to view projects
   useEffect(() => {
     fetch("/users/Iw9BIoRWI4cVUb9BHTDI/projects")
       .then(response => {

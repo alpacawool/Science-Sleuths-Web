@@ -1,6 +1,8 @@
-import React from 'react'
+/**
+ * Signup.jsx
+ * Page to create an account
+ */
 import { useNavigate } from "react-router-dom"
-
 import TextField from "@mui/material/TextField";
 
 import './Signup.scss'

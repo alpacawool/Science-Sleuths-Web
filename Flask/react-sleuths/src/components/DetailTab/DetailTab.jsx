@@ -1,10 +1,12 @@
-import {useState}from 'react'
-
+/**
+ * DetailTab.jsx
+ * Handles tabs on project detail page
+ */
+import {useState} from 'react'
 import {Box, Tab} from '@mui/material'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
-
-import './DetailTab.scss'
 import { ResponseTable } from './ResponseTable/ResponseTable'
+import './DetailTab.scss'
 
 export const DetailTab = (props) => {
   const [currentTab, setCurrentTab] = useState('1');
