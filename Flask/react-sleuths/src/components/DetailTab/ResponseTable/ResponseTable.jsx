@@ -6,9 +6,11 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
+import {formatDate} from './../../../utilities/js/dateHelper.js'
 import './ResponseTable.scss'
 
 export const ResponseTable = (props) => {
+
   return (
     <div className="response-table-container">
       <TableContainer
@@ -30,7 +32,7 @@ export const ResponseTable = (props) => {
           <TableHead>
             <TableRow>
               <TableCell align="left">Name</TableCell>
-              <TableCell align="left">Date</TableCell>
+              <TableCell align="left">Date and Time</TableCell>
               <TableCell align="left">Title</TableCell>
               {props.questions.map((cell, index) =>
               <TableCell>
@@ -59,7 +61,7 @@ export const ResponseTable = (props) => {
                  scope="row"
                  >
                   <div className="date-col">
-                    {row.datetime}
+                    {formatDate(row.datetime)}
                   </div>
                 </TableCell>
          
@@ -77,8 +79,27 @@ export const ResponseTable = (props) => {
                     {props.questions[cell.question_num-1].choices[cell.response]}
                     </span>
                     : 
-                    <span>{cell.response}</span>
+                      null
                     }
+
+                    {cell.type === 5 ?
+                    // Check if cell is date and format (TYPE 5)
+                    <span>
+                      {formatDate(cell.response)}
+                    </span>
+                    : 
+                      null
+                    }
+
+                    {cell.type != 3 && cell.type != 5 ?
+                    // All other cells
+                    <span>
+                      {cell.response}
+                    </span>
+                    : 
+                      null
+                    }   
+                    
                   </TableCell>
                   )}
               </TableRow>
