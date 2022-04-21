@@ -60,12 +60,15 @@ def get_project_observations(project_id):
                 'datetime' : str(observation_list[i].datetime),
                 'first_name' : observation_list[i].first_name,
                 'last_name': observation_list[i].last_name,
-                'responses' : []
+                'project_id': observation_list[i].project_id,
+                'responses' : [],
+                'title': observation_list[i].title
             }
 
             for j in range(0, len(observation_list[i].responses)):
                 print(observation_list[i].responses[j].response)
                 response = {
+                    'question_num' : observation_list[i].responses[j].question_num,
                     'response' : str(observation_list[i].responses[j].response),
                     'type' :  observation_list[i].responses[j].type
                 }

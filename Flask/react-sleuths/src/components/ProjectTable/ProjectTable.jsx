@@ -20,7 +20,6 @@ export const ProjectTable = (props) => {
   let navigate = useNavigate();
   
   function rowClickHandler(project_id) {
-    console.log(project_id);
     navigate(`/dash/projects/${project_id}`, {replace: true});
   }
 
