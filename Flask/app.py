@@ -2,7 +2,7 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
 import json
 from dotenv import load_dotenv
-from models import *
+import models
 
 
 
@@ -26,7 +26,7 @@ def get_projects(user_id):
     Returns list of projects owned by the user
     param user_id: ID of user
     '''
-    owned_projects = get_all_project_details(user_id)
+    owned_projects = models.get_all_project_details(user_id)
     if (owned_projects != None):
         return(json.dumps(owned_projects, default=vars))
     return {}
@@ -38,7 +38,7 @@ def get_single_project(project_id):
     - owner_id, description, questions, question info
     param project_id: ID of project
     '''
-    single_project = get_project(project_id)
+    single_project = models.get_project(project_id)
     if (single_project != None):
         return(json.dumps(single_project, default=vars))
     return {}
@@ -49,7 +49,7 @@ def get_project_observations(project_id):
     Returns observations list of a single project
     param project_id: ID of project
     '''
-    observation_list = get_all_project_observations(project_id)
+    observation_list = models.get_all_project_observations(project_id)
 
     if (observation_list != None):
         observation_responses = []
