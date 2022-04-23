@@ -69,7 +69,7 @@ export const ResponseTable = (props) => {
                  scope="row"
                  >
                   <div className="date-col">
-                    {formatDate(row.datetime)}
+                    {row.datetime}
                   </div>
                 </TableCell>
          
@@ -95,7 +95,7 @@ export const ResponseTable = (props) => {
                     {cell.type === 5 ?
                     // Check if cell is date and format (TYPE 5)
                     <span className='truncate-text'>
-                      {formatDate(cell.response)}
+                      {cell.response}
                     </span>
                     : 
                       null
