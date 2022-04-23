@@ -17,7 +17,7 @@ CORS(app)
 @cross_origin()
 def index():
     return {
-        "hello" : "Science Sleuths : Citizen Science App for Kids"
+        "hello" : "Science Sleuths : Citizen Science App for Kid"
     }
 
 @app.route('/users/<string:user_id>/projects', methods=['GET'])
