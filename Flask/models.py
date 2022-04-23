@@ -5,10 +5,12 @@ from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 from typing import List
 import csv
+import json
+import base64
 
 load_dotenv()
 
-key_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+key_path = json.loads(base64.b64decode(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")).decode('utf-8').replace('\\n', '\n'), strict=False)
 cred = credentials.Certificate(key_path)
 firebase_admin.initialize_app(cred)
 
