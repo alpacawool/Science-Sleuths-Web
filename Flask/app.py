@@ -78,16 +78,22 @@ def get_project_observations(project_id):
         return(json.dumps(observation_responses))
     return {}
 
-# Serve React Frontend
+
 @app.route('/')
 @cross_origin()
 def serve():
+    '''
+    # Serve React Frontend
+    '''
     return send_from_directory(app.static_folder, 'index.html')
 
-# Force use of react-router for routing frontend pages
-# https://stackoverflow.com/questions/30620276/
+
 @app.errorhandler(404)
 def not_found(e):
+    '''
+    Force use of react-router for routing frontend pages
+    Credits to Joao Ramiro @ https://stackoverflow.com/questions/30620276/
+    '''
     return app.send_static_file('index.html')
 
 if __name__ == '__main__':
