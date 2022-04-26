@@ -46,8 +46,10 @@ pip install -r requirements.txt
 ```
 FLASK_APP=app.py
 FLASK_ENV=production
+GOOGLE_APPLICATION_CREDENTIALS=
 ```
-4.	Start flask:
+4. For ``GOOGLE_APPLICATION_CREDENTIALS``, take the contents of the Firebase .json file and convert it to base64.
+5.	Start flask:
 ```
 Flask run
 ```
