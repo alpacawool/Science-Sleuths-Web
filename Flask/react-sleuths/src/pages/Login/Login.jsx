@@ -2,17 +2,35 @@
  * Login.jsx
  * Login page where user will login to access dashboard
  */
-import { useNavigate } from "react-router-dom"
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom"
 import TextField from "@mui/material/TextField";
 import './Login.scss'
 
+import { auth, logInWithEmailAndPassword} from "../../utilities/js/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+
 const Login = () => {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [user, loading, error] = useAuthState(auth);
 
   let navigate = useNavigate();
 
-  const onFormSubmit = () => {
-    console.log("Logged in!")
-    navigate("/dash", {replace:true});
+  useEffect(() => {
+    if (loading) {
+      // maybe trigger a loading screen
+      return;
+    }
+    if (user) navigate("/dash");
+  }, [user, loading]);
+
+  const onFormSubmit = (e) => {
+    e.preventDefault();
+    navigate("/api/token");
+    // console.log("Logged in!")
+    // navigate("/dash", {replace:true});
   }
 
   return (
@@ -21,24 +39,28 @@ const Login = () => {
         <h1>Hello!</h1>
 
         <TextField
-            fullWidth 
-            margin="normal" 
-            label="Email" 
-            variant="outlined" 
+          fullWidth
+          margin="normal"
+          label="Email"
+          variant="outlined"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value)
+          }}
         />
         <TextField
-            fullWidth 
-            margin="normal" 
-            label="Password"
-            type="Password"
-            variant="outlined" 
+          fullWidth
+          margin="normal"
+          label="Password"
+          type="Password"
+          variant="outlined"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value)
+          }}
         />
 
-        <button 
-          type="submit" 
-          onClick={onFormSubmit}
-          className="login-button"
-        >
+        <button type="submit" onClick={(e) => { e.preventDefault(); logInWithEmailAndPassword(email, password); }} className="login-button">
           Login
         </button>
 
@@ -48,7 +70,7 @@ const Login = () => {
         </span>
       </form>
     </div>
-  )
+  );
 }
 
-export default Login
+export default Login;

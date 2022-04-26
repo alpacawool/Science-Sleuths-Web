@@ -1,8 +1,39 @@
-from flask import Flask, send_from_directory
-from flask_cors import CORS, cross_origin
 import json
+from functools import wraps
+
+import firebase_admin
+import pyrebase
 from dotenv import load_dotenv
+from firebase_admin import auth, credentials
+from flask import Flask, request, send_from_directory
+from flask_cors import CORS, cross_origin
+
 from models import *
+
+load_dotenv()
+
+# firebase/firestore key setup
+key_path = json.loads(base64.b64decode(os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")).decode('utf-8').replace('\\n', '\n'), strict=False)
+cred = credentials.Certificate(key_path)
+firebase = firebase_admin.initialize_app(cred)
+pb = pyrebase.initialize_app(json.load(open('fbconfig.json')))
+
+
+def check_token(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # no token passed
+        if not request.headers.get('authorization'):
+            return {'message': 'No token provided'}, 400
+        try:
+            user = auth.verify_id_token(request.headers['authorization'])
+            request.user = user
+        #TODO: fix the except to be more specific
+        except:
+            return {'message': 'Invalid token provided.'}, 400
+        return func(*args, **kwargs)
+    return wrapper
+
 
 
 
@@ -19,6 +50,45 @@ def index():
     return {
         "hello" : "Science Sleuths : Citizen Science App for Kids"
     }
+
+# for testing auth
+@app.route('/api/userinfo')
+def userinfo():
+    return {
+        'data': 'hello'
+    }, 200
+
+
+# route to sign up a new user
+@app.route('/api/signup')
+def signup():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    if email is None or password is None:
+        return {'message': 'Error missing email or password'}, 400
+    try:
+        user = auth.create_user(
+               email=email,
+               password=password
+        )
+        return {'message': f'Successfully created user {user.uid}'}, 200
+    except:
+        return {'message': 'Error creating user'}, 400
+
+
+# route to get a new token for a valid user
+@app.route('/api/token')
+def token():
+    email = request.form.get('email')
+    password = request.form.get('password')
+    print(email, password)
+    try:
+        user = pb.auth().sign_in_with_email_and_password(email, password)
+        jwt = user['idToken']
+        return {'token': jwt}, 200
+    except:
+        return {'message': 'There was an error logging in'}, 400
+
 
 @app.route('/users/<string:user_id>/projects', methods=['GET'])
 def get_projects(user_id):
