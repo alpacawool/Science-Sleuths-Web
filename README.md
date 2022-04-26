@@ -53,16 +53,21 @@ Flask run
 ```
 ### React Setup
 
-1.	In terminal, navigate into the React directory \Science-Sleuths-Web\Flask\react-sleuths
+1.	In terminal, navigate into the React directory \Science-Sleuths-Web\Flask\react-sleuths (folder name is case sensitive)
 2.	In package.json, update the proxy attribute to your localhost similar to below: 
 ```json
   "proxy": "http://127.0.0.1:5000",
 ```
-3.	Install required packages:
+3. Set strict SSL to false
 ```
-npm install
+npm config set strict-ssl false
 ```
-4.	Start React
+
+4.	Install required packages:
+```
+npm install --legacy-peer-deps
+```
+5.	Start React
 ```
 npm start
 ```
