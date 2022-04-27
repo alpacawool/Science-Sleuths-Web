@@ -112,9 +112,9 @@ export const Dashboard = ({ children }) => {
             <div className="welcome">
               <span>Hi, {name.firstName + " " + name.lastName}</span>
             </div>
-            <button onClick={logout} className="logout-button">
+            <button onClick={logout} className="logout">
               <LogoutIcon className="nav-icon" />
-              Log Off
+              <span>Log Off</span>
             </button>
           </div>
         </aside>
