@@ -22,7 +22,7 @@ import { query, collection, doc, getDoc, where } from "firebase/firestore";
 
 import './Dashboard.scss'
 
-export const Dashboard = ({children}) => {
+export const Dashboard = ({ children }) => {
 
   /*
     Drawer logic flow - Drawer will apply collapsed CSS classes
@@ -31,29 +31,41 @@ export const Dashboard = ({children}) => {
   const [openDrawer, setOpenDrawer] = useState(true);
 
   const [user, loading, error] = useAuthState(auth);
-  const [name, setName] = useState("");
+  const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
   const fetchUserName = async () => {
     try {
-      const docRef = doc(db, "Users", user.uid);
+      const usersRef = collection(db, "Users");
+      const docRef = doc(usersRef, user.uid);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const docData = docSnap.data();
-        setName(docData.name);
+        setName({
+          firstName: docData.first_name,
+          lastName: docData.last_name
+        });
       } else {
         console.log("No such document!");
       }
     } catch (err) {
-      console.error(err);
-      alert("An error occured while fetching user data");
+      const errCode = err.code;
+      const errMessage = err.message;
+      console.log(errCode, errMessage);
     }
   };
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) return navigate("/login");
+    if (loading) {
+      // maybe trigger a loading screen
+      return;
+    }
+    if (!user) navigate("/login");
+    if (error) {
+      // error message
+      console.log("Error displaying dashboard!");
+    }
     fetchUserName();
-  }, [user, loading]);
+  }, [user, loading, error]);
 
   return (
     <div className="dashboard">
@@ -97,7 +109,7 @@ export const Dashboard = ({children}) => {
           </div>
           <div>
             <div className="welcome">
-              <span>Hi, {name}</span>
+              <span>Hi, {name.firstName + " " + name.lastName}</span>
             </div>
             <button onClick={logout} className="logout-button">
               <LogoutIcon className="nav-icon" />

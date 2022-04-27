@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import {
-  GoogleAuthProvider,
   getAuth,
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -32,25 +31,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const googleProvider = new GoogleAuthProvider();
-
-const signInWithGoogle = async () => {
-  try {
-    const res = await signInWithPopup(auth, googleProvider);
-    const user = res.user;
-    const doc = db.collection('Users').doc(user.uid).get();
-    if (doc.length === 0) {
-      await addDoc(collection(db, "Users"), {
-        name: user.displayName,
-        email: user.email,
-      });
-    }
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
 const logInWithEmailAndPassword = (email, password) => {
     signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
         // signed in
@@ -59,7 +39,7 @@ const logInWithEmailAndPassword = (email, password) => {
     }).catch(err => {
         const errCode = err.code;
         const errMessage = err.message;
-        console.log(errMessage);
+        console.log(errCode, errMessage);
     });
 };
 
@@ -96,7 +76,6 @@ const logout = () => {
 export {
   auth,
   db,
-  signInWithGoogle,
   logInWithEmailAndPassword,
   registerWithEmailAndPassword,
   sendPasswordReset,

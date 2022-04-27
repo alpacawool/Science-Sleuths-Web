@@ -7,7 +7,8 @@ import { Link, useNavigate } from "react-router-dom"
 import TextField from "@mui/material/TextField";
 import './Login.scss'
 
-import { auth, logInWithEmailAndPassword} from "../../utilities/js/firebase";
+import { auth } from "../../utilities/js/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const Login = () => {
@@ -24,13 +25,27 @@ const Login = () => {
       return;
     }
     if (user) navigate("/dash");
-  }, [user, loading]);
+    if (error) {
+      // error message
+      console.log("Error logging in!");
+    }
+  }, [user, loading, error]);
 
   const onFormSubmit = (e) => {
     e.preventDefault();
-    navigate("/api/token");
-    // console.log("Logged in!")
-    // navigate("/dash", {replace:true});
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // signed in
+        const user = userCredential.user;
+        console.log(user.uid);
+        console.log(user.displayName)
+        console.log(user.email);
+      })
+      .catch((err) => {
+        const errCode = err.code;
+        const errMessage = err.message;
+        console.log(errCode, errMessage);
+      });
   }
 
   return (
@@ -45,7 +60,7 @@ const Login = () => {
           variant="outlined"
           value={email}
           onChange={(e) => {
-            setEmail(e.target.value)
+            setEmail(e.target.value);
           }}
         />
         <TextField
@@ -56,11 +71,17 @@ const Login = () => {
           variant="outlined"
           value={password}
           onChange={(e) => {
-            setPassword(e.target.value)
+            setPassword(e.target.value);
           }}
         />
 
-        <button type="submit" onClick={(e) => { e.preventDefault(); logInWithEmailAndPassword(email, password); }} className="login-button">
+        <button
+          type="submit"
+          onClick={(e) => {
+            onFormSubmit(e);
+          }}
+          className="login-button"
+        >
           Login
         </button>
 
