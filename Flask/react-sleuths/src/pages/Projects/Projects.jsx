@@ -2,15 +2,18 @@
  * Projects.jsx
  * Displays list of projects for current user
  */
-import {useEffect, useState} from 'react'
-import { ProjectTable } from '../../components/ProjectTable/ProjectTable'
+import { useEffect, useState } from 'react';
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../utilities/js/firebase";
+import { ProjectTable } from '../../components/ProjectTable/ProjectTable';
 
 const Projects = () => {
 
-  const [projects, setProjects] = useState({})
+  const [projects, setProjects] = useState({});
+  const [user] = useAuthState(auth);
   // Currently using placeholder user_id to view projects
   useEffect(() => {
-    fetch("/users/Iw9BIoRWI4cVUb9BHTDI/projects")
+    fetch("/users/" + user.uid + "/projects")
       .then(response => {
         if (response.status === 200) {
           return response.json()
@@ -18,7 +21,7 @@ const Projects = () => {
       })
       .then(data => setProjects(data))
       .then(error => console.log(error))
-  }, [])
+  }, [user]);
 
   return (
     <div>

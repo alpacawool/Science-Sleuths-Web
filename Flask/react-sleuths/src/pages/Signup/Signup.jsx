@@ -3,7 +3,7 @@
  * Page to create an account
  */
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link, useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
 import { auth, db } from "../../utilities/js/firebase";
@@ -21,7 +21,6 @@ export const Signup = () => {
 
   useEffect(() => {
     if (loading) {
-      // maybe trigger a loading screen
       return;
     }
     if (user) navigate("/dash");
@@ -29,7 +28,7 @@ export const Signup = () => {
       // error message
       console.log("Error creating user!");
     }
-  }, [user, loading, error]);
+  }, [navigate, user, loading, error]);
 
   const onFormSubmit = (e) => {
     e.preventDefault();

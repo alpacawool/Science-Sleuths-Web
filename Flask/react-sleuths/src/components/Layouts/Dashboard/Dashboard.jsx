@@ -3,60 +3,41 @@
     Layout typically contains items such as the header, footer, sidebar
     and other items not typically seen in the main content.
 */
-import React, { useEffect, useState} from 'react';
-import {Outlet} from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
 
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import MenuIcon from '@mui/icons-material/Menu';
-import ScienceIcon from '@mui/icons-material/Science';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
-import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
-import LogoutIcon from '@mui/icons-material/Logout';
-import CloseIcon from '@mui/icons-material/Close';
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import MenuIcon from "@mui/icons-material/Menu";
+import ScienceIcon from "@mui/icons-material/Science";
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
+import LogoutIcon from "@mui/icons-material/Logout";
+import CloseIcon from "@mui/icons-material/Close";
 
-import signOut from "firebase/auth";
+import { signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
-import { auth, db, logout } from "../../../utilities/js/firebase";
-import { query, collection, doc, getDoc, where } from "firebase/firestore";
+import { auth, db } from "../../../utilities/js/firebase";
+import { collection, doc, getDoc } from "firebase/firestore";
 
-import './Dashboard.scss'
+import "./Dashboard.scss";
 
 export const Dashboard = ({ children }) => {
-
   /*
     Drawer logic flow - Drawer will apply collapsed CSS classes
     to minimize drawer with the toggle onClick function.
   */
   const [openDrawer, setOpenDrawer] = useState(true);
-
   const [user, loading, error] = useAuthState(auth);
   const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
-  const fetchUserName = async () => {
-    try {
-      const usersRef = collection(db, "Users");
-      const docRef = doc(usersRef, user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const docData = docSnap.data();
-        setName({
-          firstName: docData.first_name,
-          lastName: docData.last_name
-        });
-      } else {
-        console.log("No such document!");
-      }
-    } catch (err) {
-      const errCode = err.code;
-      const errMessage = err.message;
-      console.log(errCode, errMessage);
-    }
+
+  const logout = () => {
+    signOut(auth).then(() => navigate("/login"));
   };
 
   useEffect(() => {
     if (loading) {
-      // maybe trigger a loading screen
       return;
     }
     if (!user) navigate("/login");
@@ -64,8 +45,28 @@ export const Dashboard = ({ children }) => {
       // error message
       console.log("Error displaying dashboard!");
     }
+    const fetchUserName = async () => {
+      try {
+        const usersRef = collection(db, "Users");
+        const docRef = doc(usersRef, user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const docData = docSnap.data();
+          setName({
+            firstName: docData.first_name,
+            lastName: docData.last_name,
+          });
+        } else {
+          console.log("No such document!");
+        }
+      } catch (err) {
+        const errCode = err.code;
+        const errMessage = err.message;
+        console.log(errCode, errMessage);
+      }
+    };
     fetchUserName();
-  }, [user, loading, error]);
+  }, [navigate, user, loading, error]);
 
   return (
     <div className="dashboard">
@@ -125,4 +126,4 @@ export const Dashboard = ({ children }) => {
       </div>
     </div>
   );
-}
+};

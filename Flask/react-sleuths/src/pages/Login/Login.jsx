@@ -3,25 +3,22 @@
  * Login page where user will login to access dashboard
  */
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
-import './Login.scss'
+import "./Login.scss";
 
 import { auth } from "../../utilities/js/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const Login = () => {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [user, loading, error] = useAuthState(auth);
-
-  let navigate = useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (loading) {
-      // maybe trigger a loading screen
       return;
     }
     if (user) navigate("/dash");
@@ -29,24 +26,16 @@ const Login = () => {
       // error message
       console.log("Error logging in!");
     }
-  }, [user, loading, error]);
+  }, [navigate, user, loading, error]);
 
   const onFormSubmit = (e) => {
     e.preventDefault();
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // signed in
-        const user = userCredential.user;
-        console.log(user.uid);
-        console.log(user.displayName)
-        console.log(user.email);
-      })
-      .catch((err) => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
-      });
-  }
+    signInWithEmailAndPassword(auth, email, password).catch((err) => {
+      const errCode = err.code;
+      const errMessage = err.message;
+      console.log(errCode, errMessage);
+    });
+  };
 
   return (
     <div className="form-container">
@@ -92,6 +81,6 @@ const Login = () => {
       </form>
     </div>
   );
-}
+};
 
 export default Login;

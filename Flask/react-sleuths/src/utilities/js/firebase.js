@@ -1,21 +1,6 @@
 import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-} from "firebase/auth";
-import {
-  getFirestore,
-  query,
-  getDocs,
-  collection,
-  where,
-  addDoc,
-} from "firebase/firestore";
-import { Navigate } from "react-router-dom";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCraR3BWXcluEPPvACpTT5EkPWrS7Ob5B0",
@@ -24,60 +9,11 @@ const firebaseConfig = {
   storageBucket: "science-sleuths.appspot.com",
   messagingSenderId: "737877556460",
   appId: "1:737877556460:web:ce829f5c674628b80af9c9",
-  measurementId: "G-CE6Z8WXJ2R"
+  measurementId: "G-CE6Z8WXJ2R",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const logInWithEmailAndPassword = (email, password) => {
-    signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
-        // signed in
-        const user = userCredential.user;
-        console.log(user.uid);
-    }).catch(err => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
-    });
-};
-
-const registerWithEmailAndPassword = async (name, email, password) => {
-  try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    const user = res.user;
-    await addDoc(collection(db, "Users"), {
-      uid: user.uid,
-      name,
-      authProvider: "local",
-      email,
-    });
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const sendPasswordReset = async (email) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset link sent!");
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
-};
-
-const logout = () => {
-  signOut(auth);
-};
-
-export {
-  auth,
-  db,
-  logInWithEmailAndPassword,
-  registerWithEmailAndPassword,
-  sendPasswordReset,
-  logout,
-};
+export { auth, db };

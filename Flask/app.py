@@ -1,10 +1,8 @@
 import json
 from functools import wraps
 
-import firebase_admin
 from dotenv import load_dotenv
-from firebase_admin import auth, credentials
-from flask import Flask, request, send_from_directory
+from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
 
 from models import *
