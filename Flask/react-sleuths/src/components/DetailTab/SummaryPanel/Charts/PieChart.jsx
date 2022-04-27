@@ -1,4 +1,4 @@
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend} from 'chart.js';
 import { Pie} from 'react-chartjs-2';
 import { 
   getTrueFalseData,
@@ -19,7 +19,11 @@ export const PieChart = (props) => {
             datasets: [
                 {
                 label: 'True or False',
-                data: getTrueFalseData(props.observations, props.index)
+                data: getTrueFalseData(props.observations, props.index),
+                backgroundColor: [
+                  '#00BCD4',
+                  '#F8BBD0'
+                ]
                 }
             ]
             }}
@@ -31,13 +35,19 @@ export const PieChart = (props) => {
             data={{
             labels: props.choices,
             datasets: [
-                {
+              {
                 label: 'Count',
                 data: getMultipleChoiceData(
                     props.observations, 
                     props.index,
-                    props.choices)
-                }
+                    props.choices),
+                backgroundColor: [
+                  '#00BCD4',
+                  '#FF9800',
+                  '#E040FB',
+                  '#4CAF50'
+                ]
+              }
             ]
             }}
         />

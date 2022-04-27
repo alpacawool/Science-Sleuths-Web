@@ -1,0 +1,18 @@
+@use './../../../utilities/css/colors';
+
+.summary-panel-container {
+    .stat-num {
+        display:flex;
+        font-weight:bold;
+        font-size:6rem;
+    }
+
+    .chart-item {
+        padding: 2em;
+    }
+
+    .question-chart-prompt {
+        padding-bottom: 1rem;
+        display:flex;
+    }
+}

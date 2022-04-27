@@ -80,6 +80,7 @@ def get_project_observations(project_id):
 
 
 @app.route('/')
+@app.route('/dash')
 @cross_origin()
 def serve():
     '''

@@ -49,13 +49,13 @@ export const getMultipleChoiceData = (observationsList, questionIndex, choices) 
         response_count_dict[choices[i]] = 0;
     }
 
-    for (var i=0 ; i < observationsList.length; i++ ) {
+    for (i=0 ; i < observationsList.length; i++ ) {
         var integer_answer = observationsList[i].responses[questionIndex].response;
         var string_answer = choice_dict[integer_answer];
         response_count_dict[string_answer]++;
     }
     
-    for (var i=0; i < choices.length; i++) {
+    for (i=0; i < choices.length; i++) {
         response_array.push(response_count_dict[choice_dict[i]]);
     }
 

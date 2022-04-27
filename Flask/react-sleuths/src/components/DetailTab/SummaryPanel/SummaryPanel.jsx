@@ -6,21 +6,34 @@
 import {Grid} from '@mui/material'
 import { BarChart } from './Charts/BarChart'
 import { PieChart } from './Charts/PieChart'
+import './SummaryPanel.scss'
+
 
 export const SummaryPanel = (props) => {
 
+  
   return (
     <div className="summary-panel-container">
          
-        <Grid container>
+        <Grid container alignItems="center">
             <Grid xs={12}>
                 Total Responses: 
-                <h1>{props.observations.length}</h1>
+                <span className='stat-num'>
+                  {props.observations.length}
+                </span>
             </Grid>
 
-            {props.questions.map((question, index) =>
-              <Grid item xs={12} sm={6}>
+
+            {/* Only display question types that have a chart so far */}
+            {props.questions.map((question, index) => {
+              return question.type < 4 ?
+        
+              <Grid item xs={12} sm={6} className='chart-item'>
+
+                <span className='question-chart-prompt'>
                   Q{index+1}. {question.prompt}
+                </span>
+                  
                   {/* 0 - TRUE or FALSE - Pie */}
                   {question.type === 0 &&
                      <PieChart 
@@ -56,7 +69,11 @@ export const SummaryPanel = (props) => {
                      />
                   }    
 
-              </Grid>)}
+              </Grid>
+              : 
+              null
+              })}
+              
         </Grid>
     </div>
   )

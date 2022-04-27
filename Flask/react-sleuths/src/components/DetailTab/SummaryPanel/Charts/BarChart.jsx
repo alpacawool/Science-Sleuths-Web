@@ -5,7 +5,7 @@ import {
     BarElement,
     Title,
     Tooltip,
-    Legend,
+    Legend
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { 
@@ -13,7 +13,7 @@ import {
     getNumericData
 } from './../../../../utilities/js/statistics.js'
 
-  ChartJS.register(
+ChartJS.register(
     CategoryScale,
     LinearScale,
     BarElement,
@@ -32,13 +32,32 @@ export const BarChart = (props) => {
         datasets: [{
             data: getNumericData(props.observations, props.index),
             backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
+            '#009688',
             ],
             borderColor: [
-            'rgb(255, 99, 132)',
+            '#009688',
             ],
             borderWidth: 1
         }]
+    }}
+    options = {{
+      plugins:{   
+        legend: {
+          display: false
+        },
+      },
+      scales: { 
+        x: {
+          title: {
+            display: true,
+            text: 'Response Number'
+          },
+          ticks : {
+            display: false
+          }
+        }
+      }
+
     }}
     />
   )
