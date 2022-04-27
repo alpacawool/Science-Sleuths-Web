@@ -6,7 +6,9 @@ import {useState} from 'react'
 import {Box, Tab} from '@mui/material'
 import {TabContext, TabList, TabPanel} from '@mui/lab'
 import { ResponseTable } from './ResponseTable/ResponseTable'
+import { SummaryPanel } from './SummaryPanel/SummaryPanel'
 import './DetailTab.scss'
+
 
 export const DetailTab = (props) => {
   const [currentTab, setCurrentTab] = useState('1');
@@ -37,7 +39,10 @@ export const DetailTab = (props) => {
             </TabPanel>
 
             <TabPanel value='2'>
-              Summary Panel
+              <SummaryPanel
+                questions={props.questions}
+                observations={props.observations}
+              />
             </TabPanel>
 
         </TabContext>

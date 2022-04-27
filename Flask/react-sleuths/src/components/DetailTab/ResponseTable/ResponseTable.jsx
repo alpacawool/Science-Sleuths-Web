@@ -19,11 +19,6 @@ export const ResponseTable = (props) => {
     <div className="response-table-container">
       <TableContainer
         component={Paper}
-        sx = {{
-          height: "60vh",
-          width: '80vw',
-          overflow: "auto",
-        }}
       >
         <Table 
           stickyHeader
@@ -52,11 +47,7 @@ export const ResponseTable = (props) => {
 
               <TableRow >
                 <TableCell
-                   sx={{
-                    position: 'sticky',
-                    left: 0,
-                    background: 'white',
-                   }}
+                  className="name-cell"
                    >
                 <div className="name-col">
                   <span className='truncate-text'>

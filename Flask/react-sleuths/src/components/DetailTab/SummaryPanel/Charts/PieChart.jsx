@@ -1,0 +1,47 @@
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie} from 'react-chartjs-2';
+import { 
+  getTrueFalseData,
+  getMultipleChoiceData
+
+} from './../../../../utilities/js/statistics.js'
+ 
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+export const PieChart = (props) => {
+  return (
+    <div>
+      {/* True or False */}
+      {props.type === 0 &&
+        <Pie
+            data={{
+            labels: ['True', 'False'],
+            datasets: [
+                {
+                label: 'True or False',
+                data: getTrueFalseData(props.observations, props.index)
+                }
+            ]
+            }}
+        />
+      }
+      {/* Multiple Choice */}
+      {props.type === 3 &&
+        <Pie
+            data={{
+            labels: props.choices,
+            datasets: [
+                {
+                label: 'Count',
+                data: getMultipleChoiceData(
+                    props.observations, 
+                    props.index,
+                    props.choices)
+                }
+            ]
+            }}
+        />
+      }
+    </div>
+  )
+}
