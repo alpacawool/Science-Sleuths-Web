@@ -1,8 +1,13 @@
+import json
+from functools import wraps
+
+from dotenv import load_dotenv
 from flask import Flask, send_from_directory
 from flask_cors import CORS, cross_origin
-import json
-from dotenv import load_dotenv
+
 from models import *
+
+load_dotenv()
 
 
 
@@ -19,6 +24,7 @@ def index():
     return {
         "hello" : "Science Sleuths : Citizen Science App for Kids"
     }
+
 
 @app.route('/users/<string:user_id>/projects', methods=['GET'])
 def get_projects(user_id):
