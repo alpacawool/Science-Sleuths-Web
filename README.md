@@ -6,6 +6,7 @@ https://sleuths.herokuapp.com/
 - [Requirements](#requirements)
 - [Installation - Windows 10](#installation)
 - [Heroku Deployment](#heroku)
+- [Resources Used](#resources)
 
 ## Requirements
 ```
@@ -86,3 +87,18 @@ npm start
 - Then run ``npm run build`` to confirm changes
 - Only one branch at a time can run on Heroku. Switch the branch that is intended to test.
 
+### Deploying on Heroku using CLI
+1. Navigate to root directory. Connect to heroku instance. Authenticate with user credentials.
+```
+heroku git:remote -a sleuths
+```
+2. Replace ``BRANCH_NAME`` with branch that is desired to deploy.
+```
+git push heroku BRANCH_NAME:main
+```
+
+### Resources
+Resources used for this project:
+- Google Firebase
+- [MUI 5](https://mui.com/)
+- [Chart.js](https://www.chartjs.org/)
