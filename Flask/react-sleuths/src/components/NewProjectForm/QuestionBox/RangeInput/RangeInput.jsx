@@ -8,12 +8,14 @@ import TextField from '@mui/material/TextField';
 
 import './RangeInput.scss'
 
-export const RangeInput = () => {
+export const RangeInput = (props) => {
 
   const [rangeCheck, setRangeCheck] = useState(false);
 
   const checkChangeHandler = (event) => {
     setRangeCheck(event.target.checked);
+    props.disableRangeLimit(event.target.checked);
+
   }
 
   return (
@@ -24,7 +26,7 @@ export const RangeInput = () => {
     >
       <Grid item xs={12} sm={1.5}>
         <FormControlLabel
-          value="Range Limit"
+          value={"Range Limit"}
           control={
             <Checkbox
             checked={rangeCheck}
@@ -42,7 +44,9 @@ export const RangeInput = () => {
       </Grid>
       <Grid item xs={12} sm={2}>
         <InputLabel id="min-label">Min</InputLabel>
-          <TextField 
+          <TextField
+            name="range_min"
+            onChange={props.handleQuestionChange} 
             fullWidth 
             variant="outlined"
             disabled={!rangeCheck}
@@ -50,7 +54,9 @@ export const RangeInput = () => {
       </Grid>
       <Grid item xs={12} sm={2}>
         <InputLabel id="max-label">Max</InputLabel>
-          <TextField 
+          <TextField
+            name="range_max"
+            onChange={props.handleQuestionChange} 
             fullWidth 
             variant="outlined"
             disabled={!rangeCheck}
