@@ -103,15 +103,21 @@
             }
 
             .logout {
+                all:unset;
+                display: inline-block;
+                width: calc(sizes.$drawer-width - 1.5rem);
+                height:3rem;
                 background-color:colors.$primary-color-dark;
                 color: colors.$primary-color-text;
                 text-align:center;
                 margin:1em;
                 border-radius:2em;
+                transition: width 0.7s ease-in-out;
             }
 
             .logout:hover {
                 background-color:colors.$primary-color-darker;
+                cursor:pointer;
             }
         }
 
@@ -128,6 +134,7 @@
 
             .logout {
                 margin:0.3em;
+                width:2.5rem;
             }
 
             .welcome {
@@ -179,6 +186,7 @@
 
                 .logout {
                     margin:0.2em;
+                    width:2.5rem;
                 }
 
                 .welcome {
@@ -219,6 +227,8 @@
 
         .container {
 
+            width: 100vw;
+            
             .mobile-close-icon {
                 display:flex;
                 justify-content: right;
@@ -239,6 +249,11 @@
                     span {
                         display:inline;
                     }
+                }
+
+                .logout {
+                    display: inline-block;
+                    width: 90vw;
                 }
             }
 
