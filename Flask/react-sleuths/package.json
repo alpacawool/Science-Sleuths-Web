@@ -1,7 +1,7 @@
 {
   "name": "react-sleuths",
   "version": "0.1.0",
-  "proxy": "https://sleuths.herokuapp.com",
+  "proxy": "http://127.0.0.1:5000",
   "homepage": "/",
   "private": true,
   "dependencies": {

@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
@@ -17,12 +17,17 @@ export const QuestionBox = (props) => {
 
   const [projQuestion, setProjQuestion] = useState({
     prompt: "",
-    question_num: 1,
+    question_num: props.index+1,
     type:0,
     range_min: null,
     range_max: null,
     choices: [] 
   })
+
+  // Update newProject state question list
+  useEffect(() => {
+    props.updateQuestionList(props.index, projQuestion)
+  }, [projQuestion])
 
   const handleQuestionChange = e => {
     const { name, value } = e.target;
@@ -31,9 +36,8 @@ export const QuestionBox = (props) => {
         ...prevProjQuestion,
         [name]: value
     }));
-    props.updateQuestionList(props.index, projQuestion)
-  };
 
+  };
 
   const updateMultipleChoice = index => event => {
     const { name, value } = event.target;
@@ -43,19 +47,17 @@ export const QuestionBox = (props) => {
     setProjQuestion(prevProjQuestion => ({
       ...prevProjQuestion,
       [name]: newChoices
-  }));
-    props.updateQuestionList(props.index, projQuestion)
+    }));
   }
 
   const disableRangeLimit = checked => {
-    if (checked == 0) {
+    if (checked === 0) {
       setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
         ['range_min']: null,
         ['range_max']: null,
       }))
     }
-    props.updateQuestionList(props.index, projQuestion)
   }
 
   const [questionType, setQuestionType] = useState(0);

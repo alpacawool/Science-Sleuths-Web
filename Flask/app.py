@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS, cross_origin
 import json
 from dotenv import load_dotenv
@@ -78,6 +78,37 @@ def get_project_observations(project_id):
         return(json.dumps(observation_responses))
     return {}
 
+@app.route('/create-new-project', methods=['GET','POST'])
+def create_new_project():
+    '''
+    Adds a new project to the firestore database
+    Returns the project id
+    '''
+    content = request.json
+
+    new_project = Project(
+        content['owner_id'],
+        content['title'],
+        content['description'],
+        []
+    )
+
+    for question in content['questions']:
+        new_question = Question(
+            question['question_num'],
+            question['prompt'],
+            question['type'],
+            question['choices'],
+            question['range_min'],
+            question['range_max']
+        )
+        new_project.add_question(new_question)
+
+    new_project_id = create_project(new_project)
+
+    return {
+        "project_id" : new_project_id
+    }
 
 @app.route('/')
 @app.route('/dash')

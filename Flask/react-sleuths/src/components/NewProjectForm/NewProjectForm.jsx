@@ -2,7 +2,8 @@
  * NewProjectForm.jsx
  * Form for creating a new project
  */
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import { useNavigate } from "react-router-dom";
 import {v4} from 'uuid'
 
 import TextField from "@mui/material/TextField";
@@ -16,14 +17,16 @@ import './NewProjectForm.scss'
 
 export const NewProjectForm = () => {
 
+  let navigate = useNavigate();
 
   // Project State Functions
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
-    owner_id: "",
+    owner_id: "Iw9BIoRWI4cVUb9BHTDI",
     questions: []
   });
+
 
   const handleProjectChange = e => {
     const { name, value } = e.target;
@@ -75,6 +78,20 @@ export const NewProjectForm = () => {
 
   function submitProjectForm() {
     // Clickhandler logic for submit Button
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(newProject)
+    };
+    fetch('/create-new-project', requestOptions)
+      .then(response => {
+        if (response.status === 200) {
+          // Navigate to projects page
+          navigate('/dash/projects')
+          // return response.json()
+        }
+      })
+      .then(error => console.log(error))
   }
 
   return (
