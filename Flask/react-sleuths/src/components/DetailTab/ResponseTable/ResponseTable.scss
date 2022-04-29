@@ -2,7 +2,10 @@
 
 
 .response-table-container {
-      // Force scrollbar
+
+    /* Force scrollbar to appear
+    * Credits to @Codemaker from 
+    * https://stackoverflow.com/questions/35663653/ */
       ::-webkit-scrollbar {
         -webkit-appearance: none;
         width: 10px;
@@ -10,8 +13,8 @@
     
     ::-webkit-scrollbar-thumb {
         border-radius: 5px;
-        background-color: rgba(0,0,0,.5);
-        -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
+        background-color: colors.$form-outline-unselect;
+        -webkit-box-shadow: colors.$scroll-bar;
     }
 
     .truncate-text {
@@ -21,14 +24,52 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    /* Response Table */
+    .MuiPaper-root {
+        height:60vh;
+        width: 80vw;
+        overflow: auto;
+
+        /* Freeze column */
+        .name-cell {
+            background-color: colors.$white;
+            position: -webkit-sticky;
+            position:sticky;
+            left: 0;
+        }
+    }
+
 }
 
+@media screen and (max-width: 1366px) {
+   
+    .response-table-container {
+
+        .MuiPaper-root {
+            height:50vh;
+            width: 75vw;
+        }
+   }
+}
 
 @media screen and (max-width: 450px) {
     .response-table-container {
 
+        .MuiPaper-root {
+            height:50vh;
+            width: 85vw;
+
+            /* Do not freeze column on small device 
+             * to allow more table real-estate */
+            .name-cell {
+                position: relative;
+            }
+        }
+
         .truncate-text {
             max-width:50vw;
         }
+
     }
 }

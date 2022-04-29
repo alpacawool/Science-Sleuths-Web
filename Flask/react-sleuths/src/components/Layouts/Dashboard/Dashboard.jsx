@@ -2,6 +2,11 @@
     Dashboard serves as a wraparound for the main content of the internal site.
     Layout typically contains items such as the header, footer, sidebar
     and other items not typically seen in the main content.
+
+    The sidebar menu has been adapted into React from the following tutorial:
+    Responsive Side Menu Using HTML, CSS & Vanilla JavaScript 
+    By Basir Payenda
+    https://www.youtube.com/watch?v=_dtAHtcGYlY  
 */
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";

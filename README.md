@@ -6,6 +6,7 @@ https://sleuths.herokuapp.com/
 - [Requirements](#requirements)
 - [Installation - Windows 10](#installation)
 - [Heroku Deployment](#heroku)
+- [Resources Used](#resources)
 
 ## Requirements
 ```
@@ -46,23 +47,30 @@ pip install -r requirements.txt
 ```
 FLASK_APP=app.py
 FLASK_ENV=production
+GOOGLE_APPLICATION_CREDENTIALS=
 ```
-4.	Start flask:
+4. For ``GOOGLE_APPLICATION_CREDENTIALS``, take the contents of the Firebase .json file and convert it to base64.
+5.	Start flask:
 ```
 Flask run
 ```
 ### React Setup
 
-1.	In terminal, navigate into the React directory \Science-Sleuths-Web\Flask\react-sleuths
+1.	In terminal, navigate into the React directory \Science-Sleuths-Web\Flask\react-sleuths (folder name is case sensitive)
 2.	In package.json, update the proxy attribute to your localhost similar to below: 
 ```json
   "proxy": "http://127.0.0.1:5000",
 ```
-3.	Install required packages:
+3. Set strict SSL to false
 ```
-npm install
+npm config set strict-ssl false
 ```
-4.	Start React
+
+4.	Install required packages:
+```
+npm install --legacy-peer-deps
+```
+5.	Start React
 ```
 npm start
 ```
@@ -79,3 +87,18 @@ npm start
 - Then run ``npm run build`` to confirm changes
 - Only one branch at a time can run on Heroku. Switch the branch that is intended to test.
 
+### Deploying on Heroku using CLI
+1. Navigate to root directory. Connect to heroku instance. Authenticate with user credentials.
+```
+heroku git:remote -a sleuths
+```
+2. Replace ``BRANCH_NAME`` with branch that is desired to deploy.
+```
+git push heroku BRANCH_NAME:main
+```
+
+### Resources
+Resources used for this project:
+- Google Firebase
+- [MUI 5](https://mui.com/)
+- [Chart.js](https://www.chartjs.org/)

@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
@@ -15,12 +15,61 @@ import './QuestionBox.scss'
 
 export const QuestionBox = (props) => {
 
+  const [projQuestion, setProjQuestion] = useState({
+    prompt: "",
+    question_num: props.index+1,
+    type:0,
+    range_min: null,
+    range_max: null,
+    choices: [] 
+  })
+
+  // Update newProject state question list
+  useEffect(() => {
+    props.updateQuestionList(props.index, projQuestion)
+  }, [projQuestion])
+
+  const handleQuestionChange = e => {
+    const { name, value } = e.target;
+
+    setProjQuestion(prevProjQuestion => ({
+        ...prevProjQuestion,
+        [name]: value
+    }));
+
+  };
+
+  const updateMultipleChoice = index => event => {
+    const { name, value } = event.target;
+    let newChoices = [...projQuestion.choices];
+    newChoices[index] = value;
+
+    setProjQuestion(prevProjQuestion => ({
+      ...prevProjQuestion,
+      [name]: newChoices
+    }));
+  }
+
+  const disableRangeLimit = checked => {
+    if (checked === 0) {
+      setProjQuestion(prevProjQuestion => ({
+        ...prevProjQuestion,
+        ['range_min']: null,
+        ['range_max']: null,
+      }))
+    }
+  }
+
   const [questionType, setQuestionType] = useState(0);
 
-  const handleTypeChange = event => setQuestionType(event.target.value);
+  const handleTypeChange = (event) => {
+    setQuestionType(event.target.value);
+    // Update question type in state
+    handleQuestionChange(event)
+  }
 
   function deleteHandler(id) {
-    props.deleteHandler(id);
+    props.deleteHandler(id, props.index);
     console.log(props)
   }
 
@@ -35,10 +84,9 @@ export const QuestionBox = (props) => {
           <Grid item xs={12} sm={7.8} md={8}>
               <InputLabel id="question-prompt-label">Question Prompt {props.index+1}</InputLabel>
               <TextField
-                  defaultValue={props.formValues.test}
-                  /* Sample function of using parent function passed down to update the state.
-                  onChange
-                    ={event => props.setFormValue('description', event.target.value)} */
+                  value={projQuestion.prompt}
+                  name="prompt"
+                  onChange={handleQuestionChange}
                   fullWidth 
                   variant="outlined"
                   multiline={true}
@@ -47,6 +95,7 @@ export const QuestionBox = (props) => {
           <Grid item xs={12} sm={3}>
                   <InputLabel id="select-question-type-label">Type</InputLabel>
                   <Select fullWidth
+                      name="type"
                       labelId="select-queston-type-label"
                       id="question-type-select"
                       value={questionType}
@@ -54,7 +103,7 @@ export const QuestionBox = (props) => {
                       onChange={handleTypeChange}
                       variant="outlined"
                   >
-                      <MenuItem value={0}>Yes or No</MenuItem>
+                      <MenuItem value={0}>True or False</MenuItem>
                       <MenuItem value={1}>Whole Number</MenuItem>
                       <MenuItem value={2}>Decimal</MenuItem>
                       <MenuItem value={3}>Multiple Choice</MenuItem>
@@ -75,9 +124,18 @@ export const QuestionBox = (props) => {
       </Grid>
       {/* Show additional Grid input fields based on Question Type */}
       {/* Numeric Type - Decimal or Whole Number */}
-      { questionType === 1 || questionType === 2 ? <RangeInput /> : null}
+      { questionType === 1 || questionType === 2 ?
+       <RangeInput
+        handleQuestionChange={handleQuestionChange}
+        disableRangeLimit={disableRangeLimit}
+       /> 
+       : null}
        {/* Numeric Type - Multiple Choice */}
-       { questionType === 3 ? <MultipleChoice /> : null}
+       { questionType === 3 ? 
+       <MultipleChoice 
+        updateMultipleChoice={updateMultipleChoice}
+        /> 
+       : null}
     </div>
   )
 }

@@ -2,48 +2,67 @@
  * NewProjectForm.jsx
  * Form for creating a new project
  */
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
+import { useNavigate } from "react-router-dom";
 import {v4} from 'uuid'
 
 import TextField from "@mui/material/TextField";
 import Input from "@mui/material/TextField";
 
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../.././utilities/js/firebase";
 import { AddQuestionButton } from './AddQuestionButton/AddQuestionButton';
 import { QuestionBox } from './QuestionBox/QuestionBox';
 import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
+
 
 import './NewProjectForm.scss'
 
 export const NewProjectForm = () => {
 
-  // Test of getting form data
-  const [formValues, setFormValues]  = useState(
-    {
-      title: '',
-      description: '',
+  let navigate = useNavigate();
+
+  const [user] = useAuthState(auth);
+
+  // Project State Functions
+  const [newProject, setNewProject] = useState({
+    title: "",
+    description: "",
+    owner_id: "",
+    questions: []
+  });
+
+  useEffect(() => {
+    // Set owner id of project to user id
+    if (user) {
+      setNewProject(prevNewProject => ({
+        ...prevNewProject,
+        ['owner_id']: user.uid
+      }));
     }
-  )
+  }, [user]);
 
-  /* According to react convention, it's not recommended to use useState()
-   with nested values so it may be better to make question form data a separate
-   state. Also read that it may be worth using an immutability helper addon 
-   such as https://github.com/kolodny/immutability-helper to handle this */
-  const [questionValues, setQuestionValues] = useState(
-    [{}]
-  )
 
-  // Sample key values of formValues
-  const setFormValue = (key, value) => {
-    // console.log(`Inserting ${key} : ${value}`)
-    // console.log(formValues)
-    /* NOTE: Use of set function is required for state management */
-    setFormValues(oldFormValues => ({...oldFormValues, [key] : value}));
+  const handleProjectChange = e => {
+    const { name, value } = e.target;
+    setNewProject(prevNewProject => ({
+        ...prevNewProject,
+        [name]: value
+    }));
   };
 
-  const setQuestValues = (index, key, value) => {
-    // Stub but my theory of setting the question values
+  const updateQuestionList = (index, questionToAdd) => {
+    let newQuestions = [...newProject.questions];
+    newQuestions[index] = questionToAdd;
+
+    setNewProject(prevNewProject => ({
+      ...prevNewProject,
+      ['questions']: newQuestions
+    }));
   }
 
+
+  // Question Component Display functions 
 
   // Initialize one QuestionBox component (div) in array of questions
   const [questions, setQuestions] 
@@ -62,22 +81,40 @@ export const NewProjectForm = () => {
   }
 
   // Remove QuestionBox div
-  function deleteQuestion(id) {
+  function deleteQuestion(id, index) {
     const newQuestions = questions.filter(i => i.props.id !== id);
     setQuestions(newQuestions);
-    // Should also manage the form question element state as well here?
+    // Update Project value state (remove from Project.questions array)
+    setNewProject(prevNewProject => ({
+      ...prevNewProject,
+      ['questions']: prevNewProject.questions.filter((item, itemIndex) => itemIndex != index)
+    }))
   }
 
   function submitProjectForm() {
     // Clickhandler logic for submit Button
+    const requestOptions = {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(newProject)
+    };
+    fetch('/create-new-project', requestOptions)
+      .then(response => {
+        if (response.status === 200) {
+          // Navigate to projects page
+          navigate('/dash/projects')
+          // return response.json()
+        }
+      })
+      .then(error => console.log(error))
   }
 
   return (
     <form className="new-project-form">
         <Input
-            value={formValues.title}
-            onChange
-              ={event => setFormValue('title', event.target.value)}
+            value={newProject.title}
+            name="title"
+            onChange={handleProjectChange}
             fullWidth
             margin="normal"
             placeholder="Your project name goes here.."  
@@ -86,9 +123,9 @@ export const NewProjectForm = () => {
             
         />
         <TextField
-            value={formValues.description}
-            onChange
-              ={event => setFormValue('description', event.target.value)}
+            value={newProject.description}
+            name="description"
+            onChange={handleProjectChange}
             fullWidth 
             margin="normal" 
             label="Description" 
@@ -101,11 +138,10 @@ export const NewProjectForm = () => {
             key={questions[index].props.id}
             id={questions[index].props.id}
             index={index}
-            formValues={formValues}
             quantity={questions.length}
-            // Sample of passing setState function to child (so you can grab child form fields)
-            setFormValue={setFormValue}
             deleteHandler={deleteQuestion}
+            handleProjectChange={handleProjectChange}
+            updateQuestionList={updateQuestionList}
           /> ))} 
 
         <AddQuestionButton clickHandler={addQuestion} />
