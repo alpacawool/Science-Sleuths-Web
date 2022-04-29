@@ -32,8 +32,8 @@ const Projects = () => {
       {projects.length > 0 ? 
         <ProjectTable projects={projects}/> 
         : 
-        // Projects hasn't been loaded yet, do not load anything
-        <p></p>
+        
+        <p>You do not have any projects.</p>
       }
     </div>
   )

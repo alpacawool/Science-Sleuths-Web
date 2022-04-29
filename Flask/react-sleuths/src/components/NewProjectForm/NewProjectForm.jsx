@@ -9,9 +9,12 @@ import {v4} from 'uuid'
 import TextField from "@mui/material/TextField";
 import Input from "@mui/material/TextField";
 
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../.././utilities/js/firebase";
 import { AddQuestionButton } from './AddQuestionButton/AddQuestionButton';
 import { QuestionBox } from './QuestionBox/QuestionBox';
 import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
+
 
 import './NewProjectForm.scss'
 
@@ -19,13 +22,25 @@ export const NewProjectForm = () => {
 
   let navigate = useNavigate();
 
+  const [user] = useAuthState(auth);
+
   // Project State Functions
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
-    owner_id: "Iw9BIoRWI4cVUb9BHTDI",
+    owner_id: "",
     questions: []
   });
+
+  useEffect(() => {
+    // Set owner id of project to user id
+    if (user) {
+      setNewProject(prevNewProject => ({
+        ...prevNewProject,
+        ['owner_id']: user.uid
+      }));
+    }
+  }, [user]);
 
 
   const handleProjectChange = e => {
