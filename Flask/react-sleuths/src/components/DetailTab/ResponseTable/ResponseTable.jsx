@@ -34,7 +34,7 @@ export const ResponseTable = (props) => {
               <TableCell align="left">Date and Time</TableCell>
               <TableCell align="left">Title</TableCell>
               {props.questions.map((cell, index) =>
-              <TableCell>
+              <TableCell key={index}>
                 <span className="truncate-text">
                   Q{index+1}. {cell.prompt}
                 </span>
@@ -43,9 +43,9 @@ export const ResponseTable = (props) => {
           </TableHead>
           <TableBody>
             {/* Log name and date */}
-            {props.observations.map((row) => (
+            {props.observations.map((row, index) => (
 
-              <TableRow >
+              <TableRow key={index}>
                 <TableCell
                   className="name-cell"
                    >
@@ -72,8 +72,8 @@ export const ResponseTable = (props) => {
                   </div>
                 </TableCell>
                   {/* Log individual responses */}
-                  {row.responses.map((cell) =>
-                  <TableCell>
+                  {row.responses.map((cell, index) =>
+                    <TableCell key={index}>
                     {cell.type === 3 ?
                     // Check if multiple choice question (TYPE 3)
                     <span className='truncate-text'>

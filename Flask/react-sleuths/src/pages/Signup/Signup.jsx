@@ -6,9 +6,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
-import { auth, db } from "../../utilities/js/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth } from "../../utilities/js/firebase";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 
 import "./Signup.scss";
 
@@ -17,38 +19,43 @@ export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState({ firstName: "", lastName: "" });
-  const [user, loading, error] = useAuthState(auth);
+  const [user] = useAuthState(auth);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
+    // if user's already authenticated
     if (user) navigate("/dash");
-    if (error) {
-      // error message
-      console.log("Error creating user!");
-    }
-  }, [navigate, user, loading, error]);
+  }, [navigate, user]);
 
   const onFormSubmit = (e) => {
     e.preventDefault();
     // check all fields are filled out
-    if (!name.firstName || !name.lastName || !password || !email)
+    if (!name.firstName || !name.lastName || !password || !email) {
       alert("All fields are required!");
+    }
     createUserWithEmailAndPassword(auth, email, password)
-      .then((res) => {
-        // create user in Firestore with document ID equal to user's ID
-        setDoc(doc(db, "Users", res.user.uid), {
-          first_name: name.firstName,
-          last_name: name.lastName,
-          email: email,
-          owned_projects: [],
+      .then(() => signInWithEmailAndPassword(auth, email, password))
+      .then((user) => {
+        return user.getIdToken();
+      })
+      .then((idToken) => {
+        return fetch(`/sessionLogin`, {
+          method: "POST",
+          withCredentials: true,
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
         });
       })
+      .then(() => {
+        navigate("/dash");
+        return auth.signOut();
+      })
       .catch((err) => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
+        console.log(err.code);
+        setErrorMessage(err.code);
       });
   };
 

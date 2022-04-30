@@ -19,11 +19,10 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { auth, db } from "../../../utilities/js/firebase";
-import { collection, doc, getDoc } from "firebase/firestore";
 
 import "./Dashboard.scss";
 
@@ -36,42 +35,38 @@ export const Dashboard = ({ children }) => {
   const [user, loading, error] = useAuthState(auth);
   const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
+  // this flag is needed in order to prevent the fetch request from firing twice
+  let authFlag = true;
 
   const logout = () => {
-    signOut(auth).then(() => navigate("/login"));
-  };
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (!user) navigate("/login");
-    if (error) {
-      // error message
-      console.log("Error displaying dashboard!");
-    }
-    const fetchUserName = async () => {
-      try {
-        const usersRef = collection(db, "Users");
-        const docRef = doc(usersRef, user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const docData = docSnap.data();
-          setName({
-            firstName: docData.first_name,
-            lastName: docData.last_name,
-          });
-        } else {
-          console.log("No such document!");
-        }
-      } catch (err) {
+    signOut(auth)
+      .then(() => fetch("/sessionLogout", { method: "POST" }))
+      .catch((err) => {
         const errCode = err.code;
         const errMessage = err.message;
         console.log(errCode, errMessage);
+      });
+  };
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user && authFlag) {
+        authFlag = false;
+        if (user.displayName) {
+          const names = user.displayName.split(" ");
+          setName({
+            firstName: names[0],
+            lastName: names[1],
+          });
+        } else {
+          setName({
+            firstName: "Guest",
+            lastName: ""
+          });
+        }
       }
-    };
-    fetchUserName();
-  }, [navigate, user, loading, error]);
+    });
+  }, []);
 
   return (
     <div className="dashboard">
@@ -115,7 +110,7 @@ export const Dashboard = ({ children }) => {
           </div>
           <div>
             <div className="welcome">
-              <span>Hi, {name.firstName + " " + name.lastName}</span>
+              <span>Hi, {`${name.firstName} ${name.lastName}`}</span>
             </div>
             <button onClick={logout} className="logout">
               <LogoutIcon className="nav-icon" />

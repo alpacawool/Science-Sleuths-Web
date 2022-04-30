@@ -8,33 +8,47 @@ import TextField from "@mui/material/TextField";
 import "./Login.scss";
 
 import { auth } from "../../utilities/js/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
+    // if user's already authenticated
     if (user) navigate("/dash");
-    if (error) {
-      // error message
-      console.log("Error logging in!");
-    }
-  }, [navigate, user, loading, error]);
+  }, [navigate, user]);
 
   const onFormSubmit = (e) => {
     e.preventDefault();
-    signInWithEmailAndPassword(auth, email, password).catch((err) => {
-      const errCode = err.code;
-      const errMessage = err.message;
-      console.log(errCode, errMessage);
-    });
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        return user.getIdToken();
+      })
+      .then((idToken) => {
+        return fetch(`/sessionLogin`, {
+          method: "POST",
+          withCredentials: true,
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+      })
+      .then(() => {
+        navigate("/dash");
+        // return auth.signOut();
+      })
+      .catch((err) => {
+        console.log(err);
+        setErrorMessage(err.code);
+      });
   };
 
   return (
@@ -64,16 +78,10 @@ const Login = () => {
           }}
         />
 
-        <button
-          type="submit"
-          onClick={(e) => {
-            onFormSubmit(e);
-          }}
-          className="login-button"
-        >
+        <button type="submit" onClick={onFormSubmit} className="login-button">
           Login
         </button>
-
+        <p>{errorMessage}</p>
         <br></br>
         <span className="signup-message">
           Don't have an account yet? <a href="/signup">Sign up.</a>

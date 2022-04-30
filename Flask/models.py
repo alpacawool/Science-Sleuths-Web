@@ -389,6 +389,12 @@ def create_teacher(teacher: "Teacher") -> str:
 
     return teacher_ref[1].id
 
+def get_user(user_id: str) -> str:
+    db = firestore.client()
+    user = db.collection(u'Users').document(user_id).get()
+    if user.exists:
+        return user.to_dict()
+    print(u'No such user exists!')
 
 def modify_teacher_email(user_id: str, email: str):
     """

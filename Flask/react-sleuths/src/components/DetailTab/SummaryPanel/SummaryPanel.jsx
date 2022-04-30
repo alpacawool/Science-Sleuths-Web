@@ -16,7 +16,7 @@ export const SummaryPanel = (props) => {
     <div className="summary-panel-container">
          
         <Grid container alignItems="center">
-            <Grid xs={12}>
+            <Grid item xs={12}>
                 Total Responses: 
                 <span className='stat-num'>
                   {props.observations.length}
@@ -28,7 +28,7 @@ export const SummaryPanel = (props) => {
             {props.questions.map((question, index) => {
               return question.type < 4 ?
         
-              <Grid item xs={12} sm={6} className='chart-item'>
+              <Grid item xs={12} sm={6} key={index} className='chart-item'>
 
                 <span className='question-chart-prompt'>
                   Q{index+1}. {question.prompt}
