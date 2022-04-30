@@ -3,7 +3,7 @@
  * Form for creating a new project
  */
 import {useState, useEffect} from 'react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {v4} from 'uuid'
 
 import TextField from "@mui/material/TextField";
@@ -23,25 +23,17 @@ export const NewProjectForm = () => {
   let navigate = useNavigate();
 
   const [user] = useAuthState(auth);
+  const location = useLocation();
+  const user_id = location.state.user_id;
+  const display_name = location.state.display_name;
 
   // Project State Functions
   const [newProject, setNewProject] = useState({
     title: "",
     description: "",
-    owner_id: "",
+    owner_id: user_id,
     questions: []
   });
-
-  useEffect(() => {
-    // Set owner id of project to user id
-    if (user) {
-      setNewProject(prevNewProject => ({
-        ...prevNewProject,
-        ['owner_id']: user.uid
-      }));
-    }
-  }, [user]);
-
 
   const handleProjectChange = e => {
     const { name, value } = e.target;

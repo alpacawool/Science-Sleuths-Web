@@ -6,10 +6,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
-import { auth } from "../../utilities/js/firebase";
+import { auth, authUser } from "../../utilities/js/firebase";
+import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
+  signOut,
 } from "firebase/auth";
 
 import "./Signup.scss";
@@ -19,13 +22,9 @@ export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState({ firstName: "", lastName: "" });
-  const [user] = useAuthState(auth);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    // if user's already authenticated
-    if (user) navigate("/dash");
-  }, [navigate, user]);
+  const [message, setMessage] = useState("");
+  let user_id;
+  let display_name;
 
   const onFormSubmit = (e) => {
     e.preventDefault();
@@ -34,29 +33,31 @@ export const Signup = () => {
       alert("All fields are required!");
     }
     createUserWithEmailAndPassword(auth, email, password)
+      .then(() => authUser(auth))
+      .then(() => {
+        updateProfile(auth.currentUser, {
+          displayName: `${name.firstName} ${name.lastName}`
+        });
+      })
       .then(() => signInWithEmailAndPassword(auth, email, password))
+      .then(() => authUser(auth))
       .then((user) => {
+        user_id = user.uid;
+        display_name = user.displayName;
         return user.getIdToken();
       })
       .then((idToken) => {
-        return fetch(`/sessionLogin`, {
-          method: "POST",
-          withCredentials: true,
-          credentials: "include",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+        fetch(`/sessionLogin`, createFetchRequest(idToken))
+          .then((response) => response.json())
       })
       .then(() => {
-        navigate("/dash");
-        return auth.signOut();
+        return signOut(auth);
       })
+      .then(() => navigate("/dash", { state: { user_id: user_id, display_name: display_name } }))
       .catch((err) => {
-        console.log(err.code);
-        setErrorMessage(err.code);
-      });
+      console.log(err);
+      setMessage(err.code);
+    });
   };
 
   return (

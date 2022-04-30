@@ -21,8 +21,8 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useNavigate } from "react-router-dom";
-import { auth, db } from "../../../utilities/js/firebase";
+import { useNavigate, useLocation } from "react-router-dom";
+import { auth } from "../../../utilities/js/firebase";
 
 import "./Dashboard.scss";
 
@@ -32,41 +32,20 @@ export const Dashboard = ({ children }) => {
     to minimize drawer with the toggle onClick function.
   */
   const [openDrawer, setOpenDrawer] = useState(true);
-  const [user, loading, error] = useAuthState(auth);
   const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
-  // this flag is needed in order to prevent the fetch request from firing twice
-  let authFlag = true;
+  const location = useLocation();
+  const user_id = location.state.user_id;
+  const display_name = location.state.display_name;
 
   const logout = () => {
     signOut(auth)
       .then(() => fetch("/sessionLogout", { method: "POST" }))
+      .then(() => navigate("/login"))
       .catch((err) => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
+        console.log(err);
       });
   };
-
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user && authFlag) {
-        authFlag = false;
-        if (user.displayName) {
-          const names = user.displayName.split(" ");
-          setName({
-            firstName: names[0],
-            lastName: names[1],
-          });
-        } else {
-          setName({
-            firstName: "Guest",
-            lastName: ""
-          });
-        }
-      }
-    });
-  }, []);
 
   return (
     <div className="dashboard">
@@ -94,14 +73,14 @@ export const Dashboard = ({ children }) => {
 
             <ul className="nav">
               <li className="nav-item">
-                <a href="/dash/projects" className="nav-item-link">
+                <a onClick={() => navigate("/dash/projects", location)}  className="nav-item-link">
                   <CreditCardIcon className="nav-icon" />
                   <span>Projects</span>
                 </a>
               </li>
 
               <li className="nav-item">
-                <a href="/dash/projects/new" className="nav-item-link">
+                <a onClick={() => navigate("/dash/projects/new", location)} className="nav-item-link">
                   <CreateNewFolderIcon className="nav-icon" />
                   <span>New Project</span>
                 </a>
@@ -110,7 +89,7 @@ export const Dashboard = ({ children }) => {
           </div>
           <div>
             <div className="welcome">
-              <span>Hi, {`${name.firstName} ${name.lastName}`}</span>
+              <span>Hi, {display_name ? display_name : "Guest"}</span>
             </div>
             <button onClick={logout} className="logout">
               <LogoutIcon className="nav-icon" />

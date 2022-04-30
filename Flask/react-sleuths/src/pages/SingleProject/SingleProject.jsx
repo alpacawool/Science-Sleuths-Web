@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -20,32 +20,34 @@ const SingleProject = () => {
   const { project_id } = useParams();
   const [project, setProject] = useState({});
   const [observations, setObservations] = useState({});
-  // this flag is needed in order to prevent the fetch request from firing twice
-  let authFlag = true;
+  const [message, setMessage] = useState("");
+  const location = useLocation();
+  const user_id = location.state.user_id;
+  const display_name = location.state.display_name;
 
-  // get project data
-  useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user && authFlag) {
-        authFlag = false;
-        fetch(`/projects/${project_id}`, { method: "POST" })
-          .then((response) => response.json())
-          .then((data) => setProject(data))
-          .then(() => fetch(`/projects/${project_id}/observations`, { method: "POST" }))
-          .then((response) => response.json())
-          .then((data) => setObservations(data))
-          .catch((err) => {
-            const errCode = err.code;
-            const errMessage = err.message;
-            console.log(errCode, errMessage);
-          });
-      }
-    })
+   // triggers once when a user's state is no longer null
+   useEffect(() => {
+    if (user_id) {
+      fetch(`/projects/${project_id}`, { method: "POST" })
+      .then((response) => response.json())
+      .then((data) => setProject(data))
+      .then(() => fetch(`/projects/${project_id}/observations`, { method: "POST" }))
+      .then((response) => response.json())
+      .then((data) => setObservations(data))
+      .catch((err) => {
+        const errCode = err.code;
+        const errMessage = err.message;
+        console.log(errCode, errMessage);
+      });
+    } else {
+      setMessage("Unauthorized.");
+    }
   }, []);
 
 
   return (
     <div>
+      <p>{message}</p>
       {project !== {} ? (
         <Grid container spacing="1rem" className="single-project-container">
           <Grid item xs={12} sm={6}>

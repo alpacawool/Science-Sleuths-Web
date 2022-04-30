@@ -14,54 +14,12 @@ load_dotenv()
 TOKEN_TTL_IN_DAYS = 5
 
 
-# def verify_token(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         if not request.headers.get('authorization'):
-#             return {'message': 'No token provided'}, 400
-#         try:
-#             # token must be attached as authorization header in the form 'Bearer JWT' so split on space
-#             str_token = request.headers['authorization']
-#             token = str_token.split()
-#             # token[0] = 'Bearer', token[1] = JWT
-#             user = auth.verify_id_token(token[1])
-#             request.user = user
-#         except auth.InvalidIdTokenError:
-#             return func(*args, **kwargs)
-#         except Exception as e:
-#             print(e)
-#             return {'message':'Invalid token provided.'}, 400
-#         return func(*args, **kwargs)
-#     return wrapper
-
-
-# def validate_user_session( user_id):
-#     session_cookie = request.cookies.get('session')
-#     if not session_cookie:
-#         # Session cookie is unavailable. Force user to login.
-#         return redirect('/login')
-#     # Verify the session cookie. In this case an additional check is added to detect
-#     # if the user's Firebase session was revoked, user deleted/disabled, etc.
-#     try:
-#         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-#         return serve_content_for_user(decoded_claims)
-#     except auth.InvalidSessionCookieError:
-#         # Session cookie is invalid, expired or revoked. Force user to login.
-#         return redirect('/login')
-
 app = Flask(
     __name__,
     static_folder='react-sleuths/build', 
     static_url_path=''
 )
-CORS(app)
-
-# @app.route('/hello', methods=['GET'])
-# @cross_origin()
-# def index():
-#     return {
-#         "hello" : "Science Sleuths : Citizen Science App for Kids"
-#     }
+#CORS(app)
 
 # route to exchange JWT for session cookie
 @app.route('/sessionLogin', methods=['POST'])
@@ -91,9 +49,9 @@ def session_login():
         return abort(401, 'Failed to create a session cookie')
 
 # route to end session and logout
-@app.route('/sessionLogout', methods=['GET', 'POST'])
+@app.route('/sessionLogout', methods=['POST'])
 def session_logout():
-    response = make_response(redirect('/login'))
+    response = response = jsonify({'status': 'success'})
     response.set_cookie('session', expires=0)
     return response
 
@@ -107,21 +65,24 @@ def get_projects(user_id):
     session_cookie = request.cookies.get('session')
     if not session_cookie:
         # Session cookie is unavailable. Force user to login.
+        print("No session cookie available!")
         return redirect('/login')
     # Verify the session cookie. In this case an additional check is added to detect
     # if the user's Firebase session was revoked, user deleted/disabled, etc.
     try:
         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
         # check that the user_id matches the claims uid
-        if decoded_claims.get("uid") != user_id:
-            return {'message': 'No token provided'}, 400
+        if decoded_claims.get("user_id") != user_id:
+            print("User id doesn't match session cookie!")
+            return redirect('/login')
+        owned_projects = get_all_project_details(user_id)
+        if owned_projects:
+            return(json.dumps(owned_projects, default=vars))
+        return {}
     except auth.InvalidSessionCookieError:
         # Session cookie is invalid, expired or revoked. Force user to login.
+        print("Invalid (expired) session cookie!")
         return redirect('/login')
-    owned_projects = get_all_project_details(user_id)
-    if owned_projects:
-        return(json.dumps(owned_projects, default=vars))
-    return {}
 
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
 def get_single_project(project_id):
@@ -169,7 +130,7 @@ def get_project_observations(project_id):
     session_cookie = request.cookies.get('session')
     if not session_cookie:
         # Session cookie is unavailable. Force user to login.
-        return redirect('/login')
+        return redirect('/')
     # Verify the session cookie. In this case an additional check is added to detect
     # if the user's Firebase session was revoked, user deleted/disabled, etc.
     try:
@@ -184,31 +145,19 @@ def get_project_observations(project_id):
                 # project is owned by user
                 for project in owned_projects:
                     if project.get("project_id") == project_id:
-                        observation_list = get_all_project_observations(project_id)
-                        if observation_list:
-                            observation_responses = []
-                            for i in range(len(observation_list)):
-                                observation = {
-                                    'author_id' : observation_list[i].author_id,
-                                    # Datetime has an issue being serialized, converting to string
-                                    'datetime' : str(observation_list[i].datetime),
-                                    'first_name' : observation_list[i].first_name,
-                                    'last_name': observation_list[i].last_name,
-                                    'project_id': observation_list[i].project_id,
-                                    'responses' : [],
-                                    'title': observation_list[i].title
-                                }
-
-                                for j in range(len(observation_list[i].responses)):
-                                    response = {
-                                        'question_num' : observation_list[i].responses[j].question_num,
-                                        'response' : str(observation_list[i].responses[j].response),
-                                        'type' :  observation_list[i].responses[j].type
-                                    }
-                                    observation['responses'].append(response)
-                                observation_responses.append(observation)
-                            return(json.dumps(observation_responses))
-                        return {}
+                        db = firestore.client()
+                        obs_stream = db.collection(u'Projects').document(project_id)\
+                            .collection(u'Observations').stream()
+                        observations_list = []
+                        for obs in obs_stream:
+                            obs_data = obs.to_dict()
+                            # sad we have to convert to str because DatetimeWithNanoseconds
+                            obs_data['datetime']  = str(obs_data['datetime'])
+                            for response in obs_data['responses']:
+                                # also converting to str because DatetimeWithNanoseconds
+                                response['response'] = str(response['response'])
+                            observations_list.append(obs_data)
+                        return(json.dumps(observations_list))
                 return {'message': 'Unauthorized.'}, 401      
     except auth.InvalidSessionCookieError:
         # Session cookie is invalid, expired or revoked. Force user to login.

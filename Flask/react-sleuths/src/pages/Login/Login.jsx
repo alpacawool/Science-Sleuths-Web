@@ -7,47 +7,45 @@ import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import "./Login.scss";
 
-import { auth } from "../../utilities/js/firebase";
-import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, authUser } from "../../utilities/js/firebase";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, loading] = useAuthState(auth);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // if user's already authenticated
-    if (user) navigate("/dash");
-  }, [navigate, user]);
+  let user_id;
+  let display_name;
 
   const onFormSubmit = (e) => {
     e.preventDefault();
     signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
+      .then(() => authUser(auth))
+      .then((user) => {
+        user_id = user.uid;
+        display_name = user.displayName;
         return user.getIdToken();
       })
       .then((idToken) => {
-        return fetch(`/sessionLogin`, {
-          method: "POST",
-          withCredentials: true,
-          credentials: "include",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-      })
-      .then(() => {
-        navigate("/dash");
-        // return auth.signOut();
+        fetch(`/sessionLogin`, createFetchRequest(idToken))
+          .then(() => {
+            return signOut(auth);
+          })
+          .then(() => {
+            navigate("/dash", {
+              state: { user_id: user_id, display_name: display_name },
+            });
+          })
       })
       .catch((err) => {
         console.log(err);
-        setErrorMessage(err.code);
+        setMessage(err.code);
       });
   };
 
@@ -81,7 +79,7 @@ const Login = () => {
         <button type="submit" onClick={onFormSubmit} className="login-button">
           Login
         </button>
-        <p>{errorMessage}</p>
+        <p>{message}</p>
         <br></br>
         <span className="signup-message">
           Don't have an account yet? <a href="/signup">Sign up.</a>
