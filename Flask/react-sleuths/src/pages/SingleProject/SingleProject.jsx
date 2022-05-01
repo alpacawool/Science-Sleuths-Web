@@ -5,14 +5,12 @@
  * Makes asynchronous calls to retrieve project summary and observations
  */
 
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import { DetailTab } from "../../components/DetailTab/DetailTab";
-import { auth } from "../../utilities/js/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 
 import "./SingleProject.scss";
 
@@ -23,27 +21,32 @@ const SingleProject = () => {
   const [message, setMessage] = useState("");
   const location = useLocation();
   const user_id = location.state.user_id;
-  const display_name = location.state.display_name;
+  const count = useRef(0);
 
-   // triggers once when a user's state is no longer null
-   useEffect(() => {
-    if (user_id) {
+  useEffect(() => {
+    count.current += 1;
+  });
+
+  useEffect(() => {
+    console.log(user_id, count.current);
+    if (user_id && count.current < 2) {
       fetch(`/projects/${project_id}`, { method: "POST" })
-      .then((response) => response.json())
-      .then((data) => setProject(data))
-      .then(() => fetch(`/projects/${project_id}/observations`, { method: "POST" }))
-      .then((response) => response.json())
-      .then((data) => setObservations(data))
-      .catch((err) => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
-      });
+        .then((response) => response.json())
+        .then((data) => setProject(data))
+        .then(() =>
+          fetch(`/projects/${project_id}/observations`, { method: "POST" })
+        )
+        .then((response) => response.json())
+        .then((data) => setObservations(data))
+        .catch((err) => {
+          const errCode = err.code;
+          const errMessage = err.message;
+          console.log(errCode, errMessage);
+        });
     } else {
       setMessage("Unauthorized.");
     }
-  }, []);
-
+  }, [user_id, project_id]);
 
   return (
     <div>

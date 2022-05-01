@@ -2,38 +2,39 @@
  * Projects.jsx
  * Displays list of projects for current user
  */
-import { useEffect, useState } from "react";
-import { auth, authUser } from "../../utilities/js/firebase";
+import { useEffect, useState, useRef } from "react";
 import { ProjectTable } from "../../components/ProjectTable/ProjectTable";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState("");
   const location = useLocation();
   const user_id = location.state.user_id;
-  const display_name = location.state.display_name;
-  // triggers once when a user's state is no longer null
+  const count = useRef(0);
+
   useEffect(() => {
-    if (user_id) {
+    count.current += 1;
+  });
+  
+  useEffect(() => {
+    if (user_id && count.current < 2) {
       fetch(`/users/${user_id}/projects`, { method: "POST" })
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        setProjects(data);
-        if (projects.length === 0) {
-          setMessage("You do not have any projects.");
-        }
-      })
+        .then((response) => response.json())
+        .then((data) => {
+          setProjects(data);
+          if (projects.length === 0) {
+            setMessage("You do not have any projects.");
+          }
+        })
         .catch((err) => {
           setMessage("Unauthorized.");
           console.log(err);
-      });
+        });
     } else {
       setMessage("Unauthorized.");
     }
-  }, []);
+  }, [projects.length, user_id]);
 
   return (
     <div>
@@ -42,7 +43,7 @@ const Projects = () => {
       {projects.length > 0 ? (
         <ProjectTable projects={projects} />
       ) : (
-          <p>{message}</p>
+        <p>{message}</p>
       )}
     </div>
   );

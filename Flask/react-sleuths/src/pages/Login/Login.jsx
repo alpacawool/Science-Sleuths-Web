@@ -2,17 +2,13 @@
  * Login.jsx
  * Login page where user will login to access dashboard
  */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import "./Login.scss";
 
 import { auth, authUser } from "../../utilities/js/firebase";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 
 const Login = () => {
@@ -33,16 +29,17 @@ const Login = () => {
         return user.getIdToken();
       })
       .then((idToken) => {
-        fetch(`/sessionLogin`, createFetchRequest(idToken))
-          .then(() => {
-            return signOut(auth);
-          })
-          .then(() => {
-            navigate("/dash", {
-              state: { user_id: user_id, display_name: display_name },
-            });
-          })
+        return fetch(`/sessionLogin`, createFetchRequest(idToken));
       })
+      .then((response) => response.json())
+      .then(() => {
+        return signOut(auth);
+      })
+      .then(() =>
+        navigate("/dash/projects", {
+          state: { user_id: user_id, display_name: display_name },
+        })
+      )
       .catch((err) => {
         console.log(err);
         setMessage(err.code);
@@ -51,7 +48,7 @@ const Login = () => {
 
   return (
     <div className="form-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={onFormSubmit}>
         <h1>Hello!</h1>
 
         <TextField
@@ -76,10 +73,10 @@ const Login = () => {
           }}
         />
 
-        <button type="submit" onClick={onFormSubmit} className="login-button">
+        <button type="submit" className="login-button">
           Login
         </button>
-        <p>{message}</p>
+        {message && <p> {message} </p>}
         <br></br>
         <span className="signup-message">
           Don't have an account yet? <a href="/signup">Sign up.</a>

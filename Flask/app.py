@@ -19,7 +19,7 @@ app = Flask(
     static_folder='react-sleuths/build', 
     static_url_path=''
 )
-#CORS(app)
+CORS(app)
 
 # route to exchange JWT for session cookie
 @app.route('/sessionLogin', methods=['POST'])
@@ -51,9 +51,25 @@ def session_login():
 # route to end session and logout
 @app.route('/sessionLogout', methods=['POST'])
 def session_logout():
-    response = response = jsonify({'status': 'success'})
+    response = jsonify({'status': 'success'})
     response.set_cookie('session', expires=0)
     return response
+
+# route to create a user
+@app.route('/createUser', methods=['POST'])
+def create_user():
+    data = request.json
+    if data['first_name'] and data['last_name'] and data['email'] and data['user_id']:
+        db = firestore.client()
+        teacher_ref = db.collection(u'Users').document(data['user_id'])
+        teacher_ref.set({
+            u'first_name': data['first_name'],
+            u'last_name': data['last_name'],
+            u'email': data['email'],
+            u'owned_projects': []
+        })
+        return {'message': 'Success!'}, 200
+    return {'message': 'Invalid data format!'}, 400
 
 @app.route('/users/<string:user_id>/projects', methods=['GET', 'POST'])
 def get_projects(user_id):
@@ -61,28 +77,30 @@ def get_projects(user_id):
     Returns list of projects owned by the user
     param user_id: ID of user
     '''
-    # ensure that the user is allowed
+    # ensure that the user has a session cookie
     session_cookie = request.cookies.get('session')
     if not session_cookie:
-        # Session cookie is unavailable. Force user to login.
-        print("No session cookie available!")
-        return redirect('/login')
-    # Verify the session cookie. In this case an additional check is added to detect
-    # if the user's Firebase session was revoked, user deleted/disabled, etc.
+        return {'message': 'No session cookie provided'}, 400
     try:
+        # verify the session cookie is valid
         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
         # check that the user_id matches the claims uid
         if decoded_claims.get("user_id") != user_id:
-            print("User id doesn't match session cookie!")
-            return redirect('/login')
+            return {'message': 'Not authorized'}, 401
+        # return the data
         owned_projects = get_all_project_details(user_id)
         if owned_projects:
             return(json.dumps(owned_projects, default=vars))
         return {}
-    except auth.InvalidSessionCookieError:
-        # Session cookie is invalid, expired or revoked. Force user to login.
-        print("Invalid (expired) session cookie!")
-        return redirect('/login')
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        # bug workaround for session cookies used too early
+        if str(e).startswith("Token used too early"):
+            owned_projects = get_all_project_details(user_id)
+            if owned_projects:
+                return(json.dumps(owned_projects, default=vars))
+            return {}
+        return {'message': 'Invalid session cookie.'}, 400
 
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
 def get_single_project(project_id):
@@ -91,23 +109,18 @@ def get_single_project(project_id):
     - owner_id, description, questions, question info
     param project_id: ID of project
     '''
-    # ensure that the user is allowed
     session_cookie = request.cookies.get('session')
     if not session_cookie:
-        # Session cookie is unavailable. Force user to login.
-        return redirect('/login')
-    # Verify the session cookie. In this case an additional check is added to detect
-    # if the user's Firebase session was revoked, user deleted/disabled, etc.
+        return {'message': 'No session cookie provided'}, 400
     try:
         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        print(decoded_claims)
         # check that the project_id is owned by user
         user_id = decoded_claims.get("uid")
         if user_id:
             user_dict = get_user(user_id)
             owned_projects = user_dict.get("owned_projects")
             if owned_projects:
-                # project is owned by user
+                # ensure project is owned by user
                 for project in owned_projects:
                     if project.get("project_id") == project_id:
                         single_project = get_project(project_id)
@@ -115,9 +128,10 @@ def get_single_project(project_id):
                             return(json.dumps(single_project, default=vars))
                         return {}
                 return {'message': 'Unauthorized.'}, 401      
-    except auth.InvalidSessionCookieError:
-        # Session cookie is invalid, expired or revoked. Force user to login.
-        return redirect('/login')
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
+
 
 
 @app.route('/projects/<string:project_id>/observations', methods=['GET', 'POST'])
@@ -126,16 +140,11 @@ def get_project_observations(project_id):
     Returns observations list of a single project
     param project_id: ID of project
     '''
-     # ensure that the user is allowed
     session_cookie = request.cookies.get('session')
     if not session_cookie:
-        # Session cookie is unavailable. Force user to login.
-        return redirect('/')
-    # Verify the session cookie. In this case an additional check is added to detect
-    # if the user's Firebase session was revoked, user deleted/disabled, etc.
+            return {'message': 'No session cookie provided'}, 400
     try:
         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        print(decoded_claims)
         # check that the project_id is owned by user
         user_id = decoded_claims.get("uid")
         if user_id:
@@ -159,9 +168,9 @@ def get_project_observations(project_id):
                             observations_list.append(obs_data)
                         return(json.dumps(observations_list))
                 return {'message': 'Unauthorized.'}, 401      
-    except auth.InvalidSessionCookieError:
-        # Session cookie is invalid, expired or revoked. Force user to login.
-        return redirect('/login')
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
 
 
 @app.route('/create-new-project', methods=['GET','POST'])

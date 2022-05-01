@@ -34,9 +34,26 @@ export const Signup = () => {
     }
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => authUser(auth))
-      .then(() => {
+      .then((user) => {
+        user_id = user.uid;
         updateProfile(auth.currentUser, {
           displayName: `${name.firstName} ${name.lastName}`
+        });
+      })
+      .then(() => { 
+        const userData = {
+          first_name: name.firstName,
+          last_name: name.lastName,
+          email: email,
+          user_id: user_id
+        }
+        fetch(`/createUser`, {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
         });
       })
       .then(() => signInWithEmailAndPassword(auth, email, password))
@@ -121,7 +138,8 @@ export const Signup = () => {
         <button type="submit" onClick={onFormSubmit} className="signup-button">
           Sign up
         </button>
-
+        <br></br>
+        {message && <p> {message} </p>}
         <br></br>
         <span className="login-message">
           Already have an account? <a href="/login">Log in.</a>
