@@ -31,8 +31,6 @@ const Projects = () => {
           setMessage("Unauthorized.");
           console.log(err);
         });
-    } else {
-      setMessage("Unauthorized.");
     }
   }, [projects.length, user_id]);
 

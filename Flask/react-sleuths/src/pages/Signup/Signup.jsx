@@ -25,14 +25,15 @@ export const Signup = () => {
   const [message, setMessage] = useState("");
   let user_id;
   let display_name;
+  
 
   const onFormSubmit = (e) => {
     e.preventDefault();
     // check all fields are filled out
     if (!name.firstName || !name.lastName || !password || !email) {
       alert("All fields are required!");
-    }
-    createUserWithEmailAndPassword(auth, email, password)
+    } else {
+      createUserWithEmailAndPassword(auth, email, password)
       .then(() => authUser(auth))
       .then((user) => {
         user_id = user.uid;
@@ -61,20 +62,26 @@ export const Signup = () => {
       .then((user) => {
         user_id = user.uid;
         display_name = user.displayName;
+        console.log(display_name);
         return user.getIdToken();
       })
       .then((idToken) => {
-        fetch(`/sessionLogin`, createFetchRequest(idToken))
-          .then((response) => response.json())
+        return fetch(`/sessionLogin`, createFetchRequest(idToken));
       })
+      .then((response) => response.json())
       .then(() => {
         return signOut(auth);
       })
-      .then(() => navigate("/dash", { state: { user_id: user_id, display_name: display_name } }))
+      .then(() =>
+        navigate("/dash/projects", {
+          state: { user_id: user_id, display_name: display_name },
+        })
+      )
       .catch((err) => {
-      console.log(err);
-      setMessage(err.code);
-    });
+        console.log(err);
+        setMessage(err.code);
+      });
+    }
   };
 
   return (

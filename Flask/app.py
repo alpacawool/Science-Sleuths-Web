@@ -1,5 +1,6 @@
 import json
 from functools import wraps
+from tkinter import E
 
 from firebase_admin import auth, exceptions
 from dotenv import load_dotenv
@@ -59,7 +60,25 @@ def session_logout():
 @app.route('/createUser', methods=['POST'])
 def create_user():
     data = request.json
-    if data['first_name'] and data['last_name'] and data['email'] and data['user_id']:
+    # validate required request params were sent
+    missing_params = {"first_name": False, "last_name": False, "email": False, "user_id": False}
+    if data.get('first_name') is None or not data['first_name']:
+        missing_params['first_name'] = True
+    if data.get('last_name') is None or not data['last_name']:
+        missing_params['last_name'] = True
+    if data.get('email') is None or not data['email']:
+        missing_params['email'] = True
+    if data.get('user_id') is None or not data['user_id']:
+        missing_params['user_id'] = True
+    missing_keys = []
+    for key in missing_params.keys():
+        if missing_params[key]:
+            missing_keys.append(key)
+    if len(missing_keys) > 0:
+        message = ', '.join(missing_keys) + " required."
+        return {'message': message}, 400
+    try:
+        # create user in Firestore
         db = firestore.client()
         teacher_ref = db.collection(u'Users').document(data['user_id'])
         teacher_ref.set({
@@ -69,7 +88,9 @@ def create_user():
             u'owned_projects': []
         })
         return {'message': 'Success!'}, 200
-    return {'message': 'Invalid data format!'}, 400
+    except exceptions.FirebaseError as e:
+        print(e)
+        return {'message': e}, 400
 
 @app.route('/users/<string:user_id>/projects', methods=['GET', 'POST'])
 def get_projects(user_id):
