@@ -2,15 +2,13 @@
  * NewProjectForm.jsx
  * Form for creating a new project
  */
-import {useState, useEffect} from 'react';
+import {useState} from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import {v4} from 'uuid'
 
 import TextField from "@mui/material/TextField";
 import Input from "@mui/material/TextField";
 
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../.././utilities/js/firebase";
 import { AddQuestionButton } from './AddQuestionButton/AddQuestionButton';
 import { QuestionBox } from './QuestionBox/QuestionBox';
 import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
@@ -22,7 +20,6 @@ export const NewProjectForm = () => {
 
   let navigate = useNavigate();
 
-  const [user] = useAuthState(auth);
   const location = useLocation();
   const user_id = location.state.user_id;
   const display_name = location.state.display_name;
@@ -79,7 +76,7 @@ export const NewProjectForm = () => {
     // Update Project value state (remove from Project.questions array)
     setNewProject(prevNewProject => ({
       ...prevNewProject,
-      ['questions']: prevNewProject.questions.filter((item, itemIndex) => itemIndex != index)
+      ['questions']: prevNewProject.questions.filter((item, itemIndex) => itemIndex !== index)
     }))
   }
 
@@ -94,8 +91,9 @@ export const NewProjectForm = () => {
       .then(response => {
         if (response.status === 200) {
           // Navigate to projects page
-          navigate('/dash/projects')
-          // return response.json()
+          navigate("/dash/projects", {
+            state: { user_id: user_id, display_name: display_name },
+          });
         }
       })
       .then(error => console.log(error))

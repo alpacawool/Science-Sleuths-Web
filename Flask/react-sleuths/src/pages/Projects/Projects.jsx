@@ -10,8 +10,8 @@ const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState("");
   const location = useLocation();
-  const user_id = location.state.user_id;
-  const count = useRef(0);
+  let user_id = location.state.user_id;
+  let count = useRef(0);
 
   useEffect(() => {
     count.current += 1;

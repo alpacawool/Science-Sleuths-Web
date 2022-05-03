@@ -2,9 +2,8 @@
  * Signup.jsx
  * Page to create an account
  */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
 import { auth, authUser } from "../../utilities/js/firebase";
 import { createFetchRequest } from "../../utilities/js/fetchPostHelper";

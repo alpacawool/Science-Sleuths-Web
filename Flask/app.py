@@ -200,31 +200,38 @@ def create_new_project():
     Adds a new project to the firestore database
     Returns the project id
     '''
-    content = request.json
+    session_cookie = request.cookies.get('session')
+    if not session_cookie:
+        return {'message': 'No session cookie provided'}, 400
+    try:
+        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
+        content = request.json
 
-    new_project = Project(
-        content['owner_id'],
-        content['title'],
-        content['description'],
-        []
-    )
-
-    for question in content['questions']:
-        new_question = Question(
-            question['question_num'],
-            question['prompt'],
-            question['type'],
-            question['choices'],
-            question['range_min'],
-            question['range_max']
+        new_project = Project(
+            content['owner_id'],
+            content['title'],
+            content['description'],
+            []
         )
-        new_project.add_question(new_question)
 
-    new_project_id = create_project(new_project)
+        for question in content['questions']:
+            new_question = Question(
+                question['question_num'],
+                question['prompt'],
+                question['type'],
+                question['choices'],
+                question['range_min'],
+                question['range_max']
+            )
+            new_project.add_question(new_question)
 
-    return {
-        "project_id" : new_project_id
-    }
+        new_project_id = create_project(new_project)
+        return {"project_id" : new_project_id}
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
+
+
 
 @app.route('/')
 @app.route('/dash')

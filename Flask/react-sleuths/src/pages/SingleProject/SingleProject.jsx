@@ -20,15 +20,14 @@ const SingleProject = () => {
   const [observations, setObservations] = useState({});
   const [message, setMessage] = useState("");
   const location = useLocation();
-  const user_id = location.state.user_id;
-  const count = useRef(0);
+  let user_id = location.state.user_id;
+  let count = useRef(0);
 
   useEffect(() => {
     count.current += 1;
   });
 
   useEffect(() => {
-    console.log(user_id, count.current);
     if (user_id && count.current < 2) {
       fetch(`/projects/${project_id}`, { method: "POST" })
         .then((response) => response.json())
@@ -39,12 +38,9 @@ const SingleProject = () => {
         .then((response) => response.json())
         .then((data) => setObservations(data))
         .catch((err) => {
-          const errCode = err.code;
-          const errMessage = err.message;
-          console.log(errCode, errMessage);
+          setMessage("Unauthorized.");
+          console.log(err);
         });
-    } else {
-      setMessage("Unauthorized.");
     }
   }, [user_id, project_id]);
 
