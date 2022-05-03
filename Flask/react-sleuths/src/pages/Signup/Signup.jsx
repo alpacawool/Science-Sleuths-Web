@@ -37,8 +37,9 @@ export const Signup = () => {
       .then(() => authUser(auth))
       .then((user) => {
         user_id = user.uid;
+        display_name = `${name.firstName} ${name.lastName}`;
         updateProfile(auth.currentUser, {
-          displayName: `${name.firstName} ${name.lastName}`
+          displayName: display_name
         });
       })
       .then(() => { 
@@ -60,9 +61,6 @@ export const Signup = () => {
       .then(() => signInWithEmailAndPassword(auth, email, password))
       .then(() => authUser(auth))
       .then((user) => {
-        user_id = user.uid;
-        display_name = user.displayName;
-        console.log(display_name);
         return user.getIdToken();
       })
       .then((idToken) => {
