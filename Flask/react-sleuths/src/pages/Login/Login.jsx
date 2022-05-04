@@ -2,44 +2,53 @@
  * Login.jsx
  * Login page where user will login to access dashboard
  */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import "./Login.scss";
 
-import { auth } from "../../utilities/js/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, authUser } from "../../utilities/js/firebase";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, loading, error] = useAuthState(auth);
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (user) navigate("/dash");
-    if (error) {
-      // error message
-      console.log("Error logging in!");
-    }
-  }, [navigate, user, loading, error]);
+  let user_id;
+  let display_name;
 
   const onFormSubmit = (e) => {
     e.preventDefault();
-    signInWithEmailAndPassword(auth, email, password).catch((err) => {
-      const errCode = err.code;
-      const errMessage = err.message;
-      console.log(errCode, errMessage);
-    });
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => authUser(auth))
+      .then((user) => {
+        user_id = user.uid;
+        display_name = user.displayName;
+        return user.getIdToken();
+      })
+      .then((idToken) => {
+        return fetch(`/sessionLogin`, createFetchRequest(idToken));
+      })
+      .then((response) => response.json())
+      .then(() => {
+        return signOut(auth);
+      })
+      .then(() =>
+        navigate("/dash/projects", {
+          state: { user_id: user_id, display_name: display_name },
+        })
+      )
+      .catch((err) => {
+        console.log(err);
+        setMessage(err.code);
+      });
   };
 
   return (
     <div className="form-container">
-      <form className="login-form">
+      <form className="login-form" onSubmit={onFormSubmit}>
         <h1>Hello!</h1>
 
         <TextField
@@ -64,16 +73,10 @@ const Login = () => {
           }}
         />
 
-        <button
-          type="submit"
-          onClick={(e) => {
-            onFormSubmit(e);
-          }}
-          className="login-button"
-        >
+        <button type="submit" className="login-button">
           Login
         </button>
-
+        {message && <p> {message} </p>}
         <br></br>
         <span className="signup-message">
           Don't have an account yet? <a href="/signup">Sign up.</a>

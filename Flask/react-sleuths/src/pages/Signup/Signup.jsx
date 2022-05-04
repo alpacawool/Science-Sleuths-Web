@@ -2,13 +2,17 @@
  * Signup.jsx
  * Page to create an account
  */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthState } from "react-firebase-hooks/auth";
 import TextField from "@mui/material/TextField";
-import { auth, db } from "../../utilities/js/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth, authUser } from "../../utilities/js/firebase";
+import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  signOut,
+} from "firebase/auth";
 
 import "./Signup.scss";
 
@@ -17,39 +21,64 @@ export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState({ firstName: "", lastName: "" });
-  const [user, loading, error] = useAuthState(auth);
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (user) navigate("/dash");
-    if (error) {
-      // error message
-      console.log("Error creating user!");
-    }
-  }, [navigate, user, loading, error]);
+  const [message, setMessage] = useState("");
+  let user_id;
+  let display_name;
+  
 
   const onFormSubmit = (e) => {
     e.preventDefault();
     // check all fields are filled out
-    if (!name.firstName || !name.lastName || !password || !email)
+    if (!name.firstName || !name.lastName || !password || !email) {
       alert("All fields are required!");
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((res) => {
-        // create user in Firestore with document ID equal to user's ID
-        setDoc(doc(db, "Users", res.user.uid), {
+    } else {
+      createUserWithEmailAndPassword(auth, email, password)
+      .then(() => authUser(auth))
+      .then((user) => {
+        user_id = user.uid;
+        display_name = `${name.firstName} ${name.lastName}`;
+        updateProfile(auth.currentUser, {
+          displayName: display_name
+        });
+      })
+      .then(() => { 
+        const userData = {
           first_name: name.firstName,
           last_name: name.lastName,
           email: email,
-          owned_projects: [],
+          user_id: user_id
+        }
+        fetch(`/createUser`, {
+          method: "POST",
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
         });
       })
+      .then(() => signInWithEmailAndPassword(auth, email, password))
+      .then(() => authUser(auth))
+      .then((user) => {
+        return user.getIdToken();
+      })
+      .then((idToken) => {
+        return fetch(`/sessionLogin`, createFetchRequest(idToken));
+      })
+      .then((response) => response.json())
+      .then(() => {
+        return signOut(auth);
+      })
+      .then(() =>
+        navigate("/dash/projects", {
+          state: { user_id: user_id, display_name: display_name },
+        })
+      )
       .catch((err) => {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
+        console.log(err);
+        setMessage(err.code);
       });
+    }
   };
 
   return (
@@ -113,7 +142,8 @@ export const Signup = () => {
         <button type="submit" onClick={onFormSubmit} className="signup-button">
           Sign up
         </button>
-
+        <br></br>
+        {message && <p> {message} </p>}
         <br></br>
         <span className="login-message">
           Already have an account? <a href="/login">Log in.</a>

@@ -19,11 +19,10 @@ import CreateNewFolderIcon from "@mui/icons-material/CreateNewFolder";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useNavigate } from "react-router-dom";
-import { auth, db } from "../../../utilities/js/firebase";
-import { collection, doc, getDoc } from "firebase/firestore";
+import { useNavigate, useLocation } from "react-router-dom";
+import { auth } from "../../../utilities/js/firebase";
 
 import "./Dashboard.scss";
 
@@ -33,45 +32,20 @@ export const Dashboard = ({ children }) => {
     to minimize drawer with the toggle onClick function.
   */
   const [openDrawer, setOpenDrawer] = useState(true);
-  const [user, loading, error] = useAuthState(auth);
   const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
+  const location = useLocation();
+  const user_id = location.state.user_id;
+  const display_name = location.state.display_name;
 
   const logout = () => {
-    signOut(auth).then(() => navigate("/login"));
+    signOut(auth)
+      .then(() => fetch("/sessionLogout", { method: "POST" }))
+      .then(() => navigate("/login"))
+      .catch((err) => {
+        console.log(err);
+      });
   };
-
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-    if (!user) navigate("/login");
-    if (error) {
-      // error message
-      console.log("Error displaying dashboard!");
-    }
-    const fetchUserName = async () => {
-      try {
-        const usersRef = collection(db, "Users");
-        const docRef = doc(usersRef, user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const docData = docSnap.data();
-          setName({
-            firstName: docData.first_name,
-            lastName: docData.last_name,
-          });
-        } else {
-          console.log("No such document!");
-        }
-      } catch (err) {
-        const errCode = err.code;
-        const errMessage = err.message;
-        console.log(errCode, errMessage);
-      }
-    };
-    fetchUserName();
-  }, [navigate, user, loading, error]);
 
   return (
     <div className="dashboard">
@@ -99,14 +73,14 @@ export const Dashboard = ({ children }) => {
 
             <ul className="nav">
               <li className="nav-item">
-                <a href="/dash/projects" className="nav-item-link">
+                <a onClick={() => navigate("/dash/projects", location)}  className="nav-item-link">
                   <CreditCardIcon className="nav-icon" />
                   <span>Projects</span>
                 </a>
               </li>
 
               <li className="nav-item">
-                <a href="/dash/projects/new" className="nav-item-link">
+                <a onClick={() => navigate("/dash/projects/new", location)} className="nav-item-link">
                   <CreateNewFolderIcon className="nav-icon" />
                   <span>New Project</span>
                 </a>
@@ -115,7 +89,7 @@ export const Dashboard = ({ children }) => {
           </div>
           <div>
             <div className="welcome">
-              <span>Hi, {name.firstName + " " + name.lastName}</span>
+              <span>Hi, {display_name ? display_name : "Guest"}</span>
             </div>
             <button onClick={logout} className="logout">
               <LogoutIcon className="nav-icon" />
