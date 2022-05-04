@@ -10,6 +10,8 @@ import { DeleteQuestionButton } from '../DeleteQuestionButton/DeleteQuestionButt
 import { RangeInput } from './RangeInput/RangeInput';
 import { MultipleChoice } from './MultipleChoice/MultipleChoice';
 
+import { projectFormValidator } from './../../../utilities/js/inputValid.js'
+
 import './QuestionBox.scss'
 
 
@@ -21,7 +23,8 @@ export const QuestionBox = (props) => {
     type:0,
     range_min: null,
     range_max: null,
-    choices: [] 
+    choices: [],
+    error_message: {}
   })
 
   // Update newProject state question list
@@ -34,7 +37,10 @@ export const QuestionBox = (props) => {
 
     setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
-        [name]: value
+        [name]: value,
+        ['error_message']: {...prevProjQuestion.error_message,
+          [name]: projectFormValidator(name, value)
+        }
     }));
 
   };
@@ -90,6 +96,11 @@ export const QuestionBox = (props) => {
                   fullWidth 
                   variant="outlined"
                   multiline={true}
+                  error={!!projQuestion.error_message.prompt}
+                  helperText= {
+                    projQuestion.error_message.prompt
+                  }
+                  required
               />
           </Grid>
           <Grid item xs={12} sm={3}>
