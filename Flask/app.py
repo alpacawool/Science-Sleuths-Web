@@ -1,10 +1,10 @@
 import json
 from functools import wraps
-from tkinter import E
+
 
 from firebase_admin import auth, exceptions
 from dotenv import load_dotenv
-from flask import Flask, send_from_directory, request, jsonify, abort, redirect, make_response
+from flask import Flask, send_from_directory, request, jsonify, abort
 from flask_cors import CORS, cross_origin
 
 from models import *
@@ -22,23 +22,25 @@ app = Flask(
 )
 CORS(app)
 
+
 # route to exchange JWT for session cookie
 @app.route('/sessionLogin', methods=['POST'])
 def session_login():
-    # Get the ID token sent by the client
     if not request.headers.get('authorization'):
         return {'message': 'No token provided'}, 400
     try:
-        # token must be attached as authorization header in the form 'Bearer JWT' so split on space
+        # get the token from request header
         str_token = request.headers['authorization']
         token_list = str_token.split()
         # token_list[0] = 'Bearer', token_list[1] = JWT
         id_token = token_list[1]
         # Set session expiration to TOKEN_TTL_IN_DAYS days.
         expires_in = datetime.timedelta(days=TOKEN_TTL_IN_DAYS)
-        # Create the session cookie. This will also verify the ID token in the process.
-        # The session cookie will have the same claims as the ID token.
-        session_cookie = auth.create_session_cookie(id_token, expires_in=expires_in)
+        # Create the session cookie. This will also verify the ID token
+        # in the process. The session cookie will have the same claims as
+        # the ID token.
+        session_cookie = auth.create_session_cookie(id_token,
+                                                    expires_in=expires_in)
         response = jsonify({'status': 'success'})
         # Set cookie policy for session cookie.
         expires = datetime.datetime.now() + expires_in
@@ -49,12 +51,14 @@ def session_login():
         print(e)
         return abort(401, 'Failed to create a session cookie')
 
+
 # route to end session and logout
 @app.route('/sessionLogout', methods=['POST'])
 def session_logout():
     response = jsonify({'status': 'success'})
     response.set_cookie('session', expires=0)
     return response
+
 
 # route to create a user
 @app.route('/createUser', methods=['POST'])
@@ -92,12 +96,13 @@ def create_user():
         print(e)
         return {'message': e}, 400
 
+
 @app.route('/users/<string:user_id>/projects', methods=['GET', 'POST'])
 def get_projects(user_id):
-    '''
+    """
     Returns list of projects owned by the user
-    param user_id: ID of user
-    '''
+    :param user_id: ID of user
+    """
     # ensure that the user has a session cookie
     session_cookie = request.cookies.get('session')
     if not session_cookie:
@@ -111,7 +116,7 @@ def get_projects(user_id):
         # return the data
         owned_projects = get_all_project_details(user_id)
         if owned_projects:
-            return(json.dumps(owned_projects, default=vars))
+            return json.dumps(owned_projects, default=vars)
         return {}
     except auth.InvalidSessionCookieError as e:
         print(e)
@@ -119,17 +124,18 @@ def get_projects(user_id):
         if str(e).startswith("Token used too early"):
             owned_projects = get_all_project_details(user_id)
             if owned_projects:
-                return(json.dumps(owned_projects, default=vars))
+                return json.dumps(owned_projects, default=vars)
             return {}
         return {'message': 'Invalid session cookie.'}, 400
 
+
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
 def get_single_project(project_id):
-    '''
+    """
     Returns single project base info including
     - owner_id, description, questions, question info
-    param project_id: ID of project
-    '''
+    :param project_id: ID of project
+    """
     session_cookie = request.cookies.get('session')
     if not session_cookie:
         return {'message': 'No session cookie provided'}, 400
@@ -146,7 +152,7 @@ def get_single_project(project_id):
                     if project.get("project_id") == project_id:
                         single_project = get_project(project_id)
                         if single_project:
-                            return(json.dumps(single_project, default=vars))
+                            return json.dumps(single_project, default=vars)
                         return {}
                 return {'message': 'Unauthorized.'}, 401      
     except auth.InvalidSessionCookieError as e:
@@ -154,16 +160,15 @@ def get_single_project(project_id):
         return {'message': 'Invalid session cookie.'}, 400
 
 
-
 @app.route('/projects/<string:project_id>/observations', methods=['GET', 'POST'])
 def get_project_observations(project_id):
-    '''
+    """
     Returns observations list of a single project
-    param project_id: ID of project
-    '''
+    :param project_id: ID of project
+    """
     session_cookie = request.cookies.get('session')
     if not session_cookie:
-            return {'message': 'No session cookie provided'}, 400
+        return {'message': 'No session cookie provided'}, 400
     try:
         decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
         # check that the project_id is owned by user
@@ -187,7 +192,7 @@ def get_project_observations(project_id):
                                 # also converting to str because DatetimeWithNanoseconds
                                 response['response'] = str(response['response'])
                             observations_list.append(obs_data)
-                        return(json.dumps(observations_list))
+                        return json.dumps(observations_list)
                 return {'message': 'Unauthorized.'}, 401      
     except auth.InvalidSessionCookieError as e:
         print(e)
@@ -196,10 +201,10 @@ def get_project_observations(project_id):
 
 @app.route('/create-new-project', methods=['GET','POST'])
 def create_new_project():
-    '''
+    """
     Adds a new project to the firestore database
-    Returns the project id
-    '''
+    :return: the project ID
+    """
     session_cookie = request.cookies.get('session')
     if not session_cookie:
         return {'message': 'No session cookie provided'}, 400
@@ -232,25 +237,26 @@ def create_new_project():
         return {'message': 'Invalid session cookie.'}, 400
 
 
-
 @app.route('/')
 @app.route('/dash')
 @app.route('/dash/projects')
 @cross_origin()
 def serve():
-    '''
-    # Serve React Frontend
-    '''
+    """
+    Serves the React frontend.
+    """
     return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.errorhandler(404)
 def not_found(e):
-    '''
+    """
     Force use of react-router for routing frontend pages
     Credits to Joao Ramiro @ https://stackoverflow.com/questions/30620276/
-    '''
+    :param e: error
+    """
     return app.send_static_file('index.html')
+
 
 if __name__ == '__main__':
     app.run()

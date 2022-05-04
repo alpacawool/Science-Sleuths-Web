@@ -389,7 +389,8 @@ def create_teacher(teacher: "Teacher") -> str:
 
     return teacher_ref[1].id
 
-def get_user(user_id: str) -> str:
+
+def get_user(user_id: str) -> dict:
     db = firestore.client()
     user = db.collection(u'Users').document(user_id).get()
     if user.exists:
@@ -764,10 +765,5 @@ def add_example_data():
 
 
 if __name__ == "__main__":
-    # some test data
-    user_id = "Iw9BIoRWI4cVUb9BHTDI"
-    project_id = "7RPNXZgpXeXSNHSKEaEe"
-    project = get_project(project_id)
-    for question in project.questions:
-        print(question.to_dict())
+    pass
 

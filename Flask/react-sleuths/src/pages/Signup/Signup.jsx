@@ -48,7 +48,7 @@ export const Signup = () => {
           email: email,
           user_id: user_id
         }
-        fetch(`/createUser`, {
+        return fetch(`/createUser`, {
           method: "POST",
           headers: {
             'Accept': 'application/json',
@@ -65,7 +65,6 @@ export const Signup = () => {
       .then((idToken) => {
         return fetch(`/sessionLogin`, createFetchRequest(idToken));
       })
-      .then((response) => response.json())
       .then(() => {
         return signOut(auth);
       })
