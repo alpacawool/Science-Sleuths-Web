@@ -14,8 +14,13 @@
     .MuiTextField-root {
         & input:disabled {
             background-color:colors.$form-fill-disabled;
+            /* Hide text when range limit is disabled */
+            font-size:0em;
+            padding:1.75rem;
         }
-    }    
+    }   
+    
+   
 
 }
 
