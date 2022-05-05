@@ -92,13 +92,21 @@ export const NewProjectForm = () => {
   // Input validation
   const checkFormFields = () => {
 
-    console.log(newProject.questions)
+    // console.log(newProject.questions)
+
+    const currentQuestions = newProject.questions
+
+    for (var i = 0; i < currentQuestions.length; i++) {
+      currentQuestions[i].error_message['prompt'] = 
+        projectFormValidator('prompt', currentQuestions[i].prompt)
+    }
     setNewProject(prevNewProject => ({
       ...prevNewProject,
       ['error_message']: {...prevNewProject.error_message,
         ['title']: projectFormValidator('title', prevNewProject.title),
         ['description']: projectFormValidator('description', prevNewProject.description),
-      }
+      },
+      ['questions'] : currentQuestions
     }));
   }
 

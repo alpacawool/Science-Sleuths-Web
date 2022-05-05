@@ -1,6 +1,6 @@
 // Validate new project form fields
 export const projectFormValidator = (name, value) => {
-
+  // console.log(`${name}, ${value}`)
   let errorMessage = ''
 
   switch(name) {
@@ -29,6 +29,8 @@ export const entireNewProjectValidator = (currentProject) => {
   var hasErrorMessages = false
   let error_message = currentProject.error_message
 
+  // Check overall project error messages
+  // Empty object implies blank fields
   if (error_message === {} ) {
     hasErrorMessages = true
   }
@@ -36,9 +38,26 @@ export const entireNewProjectValidator = (currentProject) => {
     hasErrorMessages = true
   }
 
+  // Check individual question error messages
+  let currentQuestions = currentProject.questions
+  
+  for (var i = 0; i < currentQuestions.length; i++) {
+    let currentError = currentQuestions[i].error_message
+
+    if (currentError === {}) {
+      hasErrorMessages = true
+    }
+
+    if (currentError.prompt !== '' ) {
+      hasErrorMessages = true
+    }
+  }
+  
   if (hasErrorMessages) {
     isValid = false
   }
+
+
 
   return isValid
 }
