@@ -215,13 +215,25 @@ def create_new_project():
         )
 
         for question in content['questions']:
+
+            # Addressing range being submitted as string
+            range_min = question['range_min']
+            range_max = question['range_max']
+
+            if question['type'] == 1:
+                range_min = int(range_min)
+                range_max = int(range_max)
+            if question['type'] == 2:
+                range_min = float(range_min)
+                range_max = float(range_max)
+
             new_question = Question(
                 question['question_num'],
                 question['prompt'],
                 question['type'],
                 question['choices'],
-                question['range_min'],
-                question['range_max']
+                range_min,
+                range_max,
             )
             new_project.add_question(new_question)
 

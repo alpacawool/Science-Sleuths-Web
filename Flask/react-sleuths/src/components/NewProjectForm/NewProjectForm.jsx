@@ -136,26 +136,27 @@ export const NewProjectForm = () => {
     let isValid = entireNewProjectValidator(newProject)
 
     if (!isValid) {
-      console.log("Fields are still incorrect")
+      // There are invalid fields
     } else {
-      console.log("No problems with fields!")
+      // All fields are valid, submit project to database
+      // Clickhandler logic for submit Button
+      const requestOptions = {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(newProject)
+      };
+      fetch('/create-new-project', requestOptions)
+        .then(response => {
+          if (response.status === 200) {
+            // Navigate to projects page
+            navigate("/dash/projects", {
+              state: { user_id: user_id, display_name: display_name },
+            });
+          }
+        })
+        .then(error => console.log(error))
     }
-    // Clickhandler logic for submit Button
-    // const requestOptions = {
-    //   method: 'POST',
-    //   headers: {'Content-Type': 'application/json'},
-    //   body: JSON.stringify(newProject)
-    // };
-    // fetch('/create-new-project', requestOptions)
-    //   .then(response => {
-    //     if (response.status === 200) {
-    //       // Navigate to projects page
-    //       navigate("/dash/projects", {
-    //         state: { user_id: user_id, display_name: display_name },
-    //       });
-    //     }
-    //   })
-    //   .then(error => console.log(error))
+
   }
 
   return (
