@@ -1,6 +1,6 @@
 
 // Validate new project form fields
-export const projectFormValidator = (name, value) => {
+export const projectFormValidator = (name, value, opposingValue) => {
   let errorMessage = ''
 
   switch(name) {
@@ -31,6 +31,12 @@ export const projectFormValidator = (name, value) => {
       if (!isPositive(value)) {
         errorMessage = 'Positive values only'
       }
+      // Check if range min is less than or equal to max
+      if (opposingValue !== null) {
+        if (parseFloat(value) >= parseFloat(opposingValue)) {
+          errorMessage= 'Min must be less than max'
+        }
+      }
       break;
     case 'range_max':
       if (!isValidLength(value)) {
@@ -44,10 +50,17 @@ export const projectFormValidator = (name, value) => {
       if (!isPositive(value)) {
         errorMessage = 'Positive values only'
       }
+      // Check if range max is greater than or equal to max
+      if (opposingValue !== null) {
+        if (parseFloat(value) <= parseFloat(opposingValue)) {
+          errorMessage= 'Max must be greater than min'
+        }
+      }
   }
 
   return errorMessage
 }
+
 
 // Validate multiple choice fields
 export const multipleChoiceFormValidator = (value, index) => {

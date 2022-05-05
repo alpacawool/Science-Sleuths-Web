@@ -39,6 +39,16 @@ export const QuestionBox = (props) => {
 
   const handleQuestionChange = e => {
     const { name, value } = e.target;
+
+    // For range type
+    var opposingValue = null
+    if (name === 'range_min') {
+      opposingValue = projQuestion.range_max;
+    }
+    if (name === 'range_max') {
+      opposingValue = projQuestion.range_min;
+    }
+  
     // Check if change of type (reset error fields)
     if (name === 'type') {
       setProjQuestion(prevProjQuestion => ({
@@ -51,7 +61,7 @@ export const QuestionBox = (props) => {
           ...prevProjQuestion,
           [name]: value,
           ['error_message']: {...prevProjQuestion.error_message,
-            [name]: projectFormValidator(name, value)
+            [name]: projectFormValidator(name, value, opposingValue)
           }
       }));
     }
