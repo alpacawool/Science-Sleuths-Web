@@ -1,3 +1,4 @@
+
 // Validate new project form fields
 export const projectFormValidator = (name, value) => {
   let errorMessage = ''
@@ -17,11 +18,38 @@ export const projectFormValidator = (name, value) => {
       if (!isValidLength(value)) {
         errorMessage = 'Question Prompt is required'
       }
+      break;
+    case 'range_min':
+      if (!isValidLength(value)) {
+        errorMessage = 'Min is required'
+        return errorMessage
+      }
+      if (!isNumeric(value)) {
+        errorMessage = 'Numeric values only'
+        return errorMessage
+      }
+      if (!isPositive(value)) {
+        errorMessage = 'Positive values only'
+      }
+      break;
+    case 'range_max':
+      if (!isValidLength(value)) {
+          errorMessage = 'Max is required'
+          return errorMessage
+      }
+      if (!isNumeric(value)) {
+        errorMessage = 'Numeric values only'
+        return errorMessage
+      }
+      if (!isPositive(value)) {
+        errorMessage = 'Positive values only'
+      }
   }
 
   return errorMessage
 }
 
+// Validate multiple choice fields
 export const multipleChoiceFormValidator = (value, index) => {
   let errorMessage = ''
   
@@ -67,8 +95,18 @@ export const entireNewProjectValidator = (currentProject) => {
       hasErrorMessages = true
     }
 
+    // Check for ranged input
+    if (currentQuestions[i].type === 1 || currentQuestions[i].type === 2) {
+      if (currentQuestions[i].set_range === true) {
+        if (currentError.range_min !== '' || currentError.range_max !== '') {
+          hasErrorMessages = true
+        }
+      }
+ 
+    }
+    
     // Check for multiple choice errors
-    if (currentQuestions[i].type == 3) {
+    if (currentQuestions[i].type === 3) {
       for (i = 0; i < 4; i++ ) {
         if (currentError[`choice${i}`] !== '') {
           hasErrorMessages = true
@@ -82,8 +120,6 @@ export const entireNewProjectValidator = (currentProject) => {
     isValid = false
   }
 
-
-
   return isValid
 }
 
@@ -93,4 +129,21 @@ const isValidLength = (value) => {
         return false;
     }
     return true
+}
+
+const isNumeric = (value) => {
+  if (value.includes('+')) {
+    return false
+  }
+  if (!isNaN(value)) {
+    return true;
+  }
+  return false;
+}
+
+const isPositive = (value) => {
+  if (value.includes('-')) {
+    return false
+  }
+  return true
 }

@@ -24,6 +24,7 @@ export const QuestionBox = (props) => {
     prompt: "",
     question_num: props.index+1,
     type:0,
+    set_range: false,
     range_min: null,
     range_max: null,
     choices: [],
@@ -33,11 +34,11 @@ export const QuestionBox = (props) => {
   // Update newProject state question list
   useEffect(() => {
     props.updateQuestionList(props.index, projQuestion)
+    console.log(projQuestion)
   }, [projQuestion])
 
   const handleQuestionChange = e => {
     const { name, value } = e.target;
-    console.log(name)
     // Check if change of type (reset error fields)
     if (name === 'type') {
       setProjQuestion(prevProjQuestion => ({
@@ -71,12 +72,25 @@ export const QuestionBox = (props) => {
     }));
   }
 
-  const disableRangeLimit = checked => {
-    if (checked === 0) {
+  const disableRangeLimit = (checked) => {
+    if (checked === false) {
       setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
+        ['set_range']: false,
         ['range_min']: null,
         ['range_max']: null,
+        ['error_message']: {...prevProjQuestion.error_message, 
+          ['range_min']: '',
+          ['range_max']: ''
+        }
+
+      }))
+    } else {
+      setProjQuestion(prevProjQuestion => ({
+        ...prevProjQuestion,
+        ['set_range']: true,
+        ['range_min']: '',
+        ['range_max']: '',
       }))
     }
   }
@@ -154,6 +168,7 @@ export const QuestionBox = (props) => {
        <RangeInput
         handleQuestionChange={handleQuestionChange}
         disableRangeLimit={disableRangeLimit}
+        error_message = {projQuestion.error_message}
        /> 
        : null}
        {/* Numeric Type - Multiple Choice */}

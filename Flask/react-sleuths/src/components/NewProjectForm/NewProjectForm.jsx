@@ -93,21 +93,31 @@ export const NewProjectForm = () => {
   // Input validation
   const checkFormFields = () => {
 
-    // console.log(newProject.questions)
-
     const currentQuestions = newProject.questions
 
     for (var i = 0; i < currentQuestions.length; i++) {
       currentQuestions[i].error_message['prompt'] = 
         projectFormValidator('prompt', currentQuestions[i].prompt)
       
+       // Check ranged question (1, 2)
+      if (currentQuestions[i].type === 1 || currentQuestions[i].type === 2) {
+        if (currentQuestions[i].set_range === true) {
+          currentQuestions[i].error_message['range_min'] = 
+            projectFormValidator('range_min', currentQuestions[i].range_min)
+          currentQuestions[i].error_message['range_max'] = 
+            projectFormValidator('range_max', currentQuestions[i].range_max)
+        }
+      } 
+
       // Check multiple choice
       if (currentQuestions[i].type === 3) {
         for (var j = 0; j < 4 ; j++) {
           currentQuestions[i].error_message[`choice${j}`] = 
           multipleChoiceFormValidator(currentQuestions[i].choices[j], j)
         }
-      }  
+      } 
+      
+  
     }
     setNewProject(prevNewProject => ({
       ...prevNewProject,
@@ -120,8 +130,9 @@ export const NewProjectForm = () => {
   }
 
   function submitProjectForm() {
-    // Validate fields
+    // Show error messages on empty fields
     checkFormFields();
+    // Check field data and validate it
     let isValid = entireNewProjectValidator(newProject)
 
     if (!isValid) {
