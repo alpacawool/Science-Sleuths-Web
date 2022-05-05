@@ -15,6 +15,7 @@ import { SubmitFormButton } from './SubmitFormButton/SubmitFormButton';
 
 import { 
   projectFormValidator,
+  multipleChoiceFormValidator,
   entireNewProjectValidator 
 } from './../../utilities/js/inputValid.js'
 
@@ -99,6 +100,14 @@ export const NewProjectForm = () => {
     for (var i = 0; i < currentQuestions.length; i++) {
       currentQuestions[i].error_message['prompt'] = 
         projectFormValidator('prompt', currentQuestions[i].prompt)
+      
+      // Check multiple choice
+      if (currentQuestions[i].type === 3) {
+        for (var j = 0; j < 4 ; j++) {
+          currentQuestions[i].error_message[`choice${j}`] = 
+          multipleChoiceFormValidator(currentQuestions[i].choices[j], j)
+        }
+      }  
     }
     setNewProject(prevNewProject => ({
       ...prevNewProject,

@@ -10,7 +10,10 @@ import { DeleteQuestionButton } from '../DeleteQuestionButton/DeleteQuestionButt
 import { RangeInput } from './RangeInput/RangeInput';
 import { MultipleChoice } from './MultipleChoice/MultipleChoice';
 
-import { projectFormValidator } from './../../../utilities/js/inputValid.js'
+import { 
+  projectFormValidator,
+  multipleChoiceFormValidator
+} from './../../../utilities/js/inputValid.js'
 
 import './QuestionBox.scss'
 
@@ -34,14 +37,23 @@ export const QuestionBox = (props) => {
 
   const handleQuestionChange = e => {
     const { name, value } = e.target;
-
-    setProjQuestion(prevProjQuestion => ({
+    console.log(name)
+    // Check if change of type (reset error fields)
+    if (name === 'type') {
+      setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
         [name]: value,
-        ['error_message']: {...prevProjQuestion.error_message,
-          [name]: projectFormValidator(name, value)
-        }
-    }));
+        ['error_message']: {}
+      }));
+    } else {
+      setProjQuestion(prevProjQuestion => ({
+          ...prevProjQuestion,
+          [name]: value,
+          ['error_message']: {...prevProjQuestion.error_message,
+            [name]: projectFormValidator(name, value)
+          }
+      }));
+    }
 
   };
 
@@ -52,7 +64,10 @@ export const QuestionBox = (props) => {
 
     setProjQuestion(prevProjQuestion => ({
       ...prevProjQuestion,
-      [name]: newChoices
+      [name]: newChoices,
+      ['error_message']: {...prevProjQuestion.error_message,
+        [`choice${index}`]: multipleChoiceFormValidator(value, index)
+      }
     }));
   }
 
@@ -145,6 +160,7 @@ export const QuestionBox = (props) => {
        { questionType === 3 ? 
        <MultipleChoice 
         updateMultipleChoice={updateMultipleChoice}
+        error_message = {projQuestion.error_message}
         /> 
        : null}
     </div>

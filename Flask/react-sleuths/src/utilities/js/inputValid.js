@@ -1,6 +1,5 @@
 // Validate new project form fields
 export const projectFormValidator = (name, value) => {
-  // console.log(`${name}, ${value}`)
   let errorMessage = ''
 
   switch(name) {
@@ -18,6 +17,22 @@ export const projectFormValidator = (name, value) => {
       if (!isValidLength(value)) {
         errorMessage = 'Question Prompt is required'
       }
+  }
+
+  return errorMessage
+}
+
+export const multipleChoiceFormValidator = (value, index) => {
+  let errorMessage = ''
+  
+  // Empty list
+  if (value === undefined) {
+    errorMessage = `Choice ${index + 1} is required.`
+    return errorMessage
+  }
+
+  if (!isValidLength(value)) {
+    errorMessage = `Choice ${index + 1} is required.`
   }
 
   return errorMessage
@@ -51,6 +66,16 @@ export const entireNewProjectValidator = (currentProject) => {
     if (currentError.prompt !== '' ) {
       hasErrorMessages = true
     }
+
+    // Check for multiple choice errors
+    if (currentQuestions[i].type == 3) {
+      for (i = 0; i < 4; i++ ) {
+        if (currentError[`choice${i}`] !== '') {
+          hasErrorMessages = true
+        }
+      }
+    }
+   
   }
   
   if (hasErrorMessages) {
