@@ -16,7 +16,7 @@ import Paper from "@mui/material/Paper";
 import './ProjectTable.scss'
 
 export const ProjectTable = (props) => {
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
   const location = useLocation();
   const user_id = location.state.user_id;
   const display_name = location.state.display_name;

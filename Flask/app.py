@@ -122,6 +122,7 @@ def get_projects(user_id):
         print(e)
         # bug workaround for session cookies used too early
         if str(e).startswith("Token used too early"):
+            print("ERROR: returning data anyways")
             owned_projects = get_all_project_details(user_id)
             if owned_projects:
                 return json.dumps(owned_projects, default=vars)
