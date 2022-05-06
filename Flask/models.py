@@ -1,4 +1,5 @@
 import os
+import io
 import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -633,12 +634,12 @@ def get_all_project_observations(project_id: str) -> List["Observation"]:
     return observations
 
 
-def write_project_to_file(project_id: str, filepath: str):
+def write_project_to_file(project_id: str):
     """
     Writes project to a csv file with the chosen filename.
     :param project_id: the project_id of the project
     :param filepath: the filepath to write to
-    :return:
+    :return: io.StringIO file content
     """
     db = firestore.client()
 
@@ -648,24 +649,27 @@ def write_project_to_file(project_id: str, filepath: str):
     title = [{"project_id": project_id}]
     header = ['author_id', 'first_name', 'last_name', 'title', 'datetime',
               'question_num', 'type', 'response']
-    with open(filepath, 'w', encoding='UTF8', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(title)
-        writer.writerow(header)
+    
+    file_content = io.StringIO()
+    writer = csv.writer(file_content)
+    writer.writerow(title)
+    writer.writerow(header)
 
-        for obs in obs_stream:
-            obs_dict = obs.to_dict()
-            for response in obs_dict['responses']:
-                data = []
-                data.append(obs_dict['author_id'])
-                data.append(obs_dict['first_name'])
-                data.append(obs_dict['last_name'])
-                data.append(obs_dict['title'])
-                data.append(obs_dict['datetime'])
-                data.append(response['question_num'])
-                data.append(response['type'])
-                data.append(response['response'])
-                writer.writerow(data)
+    for obs in obs_stream:
+        obs_dict = obs.to_dict()
+        for response in obs_dict['responses']:
+            data = []
+            data.append(obs_dict['author_id'])
+            data.append(obs_dict['first_name'])
+            data.append(obs_dict['last_name'])
+            data.append(obs_dict['title'])
+            data.append(obs_dict['datetime'])
+            data.append(response['question_num'])
+            data.append(response['type'])
+            data.append(response['response'])
+            writer.writerow(data)
+    
+    return file_content
 
 
 def add_example_data():

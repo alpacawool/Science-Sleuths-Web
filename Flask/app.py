@@ -1,7 +1,7 @@
 import json
 from functools import wraps
 from tkinter import E
-
+import io
 from firebase_admin import auth, exceptions
 from dotenv import load_dotenv
 from flask import Flask, send_from_directory, request, jsonify, abort, redirect, make_response
@@ -189,6 +189,28 @@ def get_project_observations(project_id):
                             observations_list.append(obs_data)
                         return(json.dumps(observations_list))
                 return {'message': 'Unauthorized.'}, 401      
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
+
+
+@app.route('/projects/<string:project_id>/download', methods=['GET', 'POST'])
+def download_csv_file(project_id):
+    '''
+    Returns .csv file of a single project
+    param project_id: ID of project
+    Credits to vectorfrog @ https://stackoverflow.com/questions/26997679/
+    '''
+    session_cookie = request.cookies.get('session')
+    if not session_cookie:
+        return {'message': 'No session cookie provided'}, 400
+    try:
+        file_content = io.StringIO()
+        file_content = write_project_to_file(project_id)
+        csv_response = make_response(file_content.getvalue())
+        csv_response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+        csv_response.headers["Content-type"] = "text/csv"
+        return csv_response
     except auth.InvalidSessionCookieError as e:
         print(e)
         return {'message': 'Invalid session cookie.'}, 400
