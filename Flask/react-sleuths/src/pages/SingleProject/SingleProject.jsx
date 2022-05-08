@@ -44,6 +44,35 @@ const SingleProject = () => {
     }
   }, [user_id, project_id]);
 
+  const onClickDownload = () => {
+    if (user_id) {
+      fetch(`/projects/${project_id}/download`, { method: "POST" })
+        .then((response) => {
+          let data = response.body.getReader()
+          data.read().then(({ done, value}) => {
+            saveCSV(new TextDecoder("utf-8").decode(value), `${project_id}.csv`)
+          })
+        }
+      )
+    }
+  }
+
+  const saveCSV = (data, fileName) => {
+    /**
+     * Download .csv file
+     * Credits to fryeguy @ https://stackoverflow.com/questions/31214677/
+     * **/
+    const blob = new Blob([data], {type: 'text/csv'})
+    const url = URL.createObjectURL(blob)
+
+    // Create DOM element and force click to download object
+    const downloadElement = document.createElement('a');
+    downloadElement.href = url;
+    downloadElement.download = fileName;
+    downloadElement.click();
+
+  }
+
   return (
     <div>
       <p>{message}</p>
@@ -69,9 +98,19 @@ const SingleProject = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <button className="download-csv-button">
+            <button 
+              // Only allow button to be clickable if user_id
+              // is loaded, otherwise, show greyed out button
+              disabled={!user_id}
+              className={
+                user_id 
+                ? 'download-csv-button download-available' 
+                : 'download-csv-button download-unavailable'
+              }
+              onClick={onClickDownload}
+
+            >
               <DownloadIcon className="download-csv-icon" />
-              {/* TODO: Add CSV download functionality */}
               Export .csv
             </button>
           </Grid>

@@ -73,7 +73,7 @@
         width:300px;
         align-items: center;
         text-align: center;
-        background-color:colors.$primary-color-darker;
+    
         color:colors.$primary-color-text;
         justify-content: center;
         height:3rem;
@@ -82,15 +82,25 @@
         margin-bottom: 1rem;
         font-weight:800;
     
-        &:hover {
-            background-color:colors.$primary-color-darkest;
-            color:colors.$primary-color-text;
-            cursor:pointer;
-        }
+
 
         .download-csv-icon{
             margin-right:0.4em;
         }
+    }
+
+    .download-available {
+        background-color:colors.$primary-color-darker;
+
+            &:hover {
+                background-color:colors.$primary-color-darkest;
+                color:colors.$primary-color-text;
+                cursor:pointer;
+            }
+    }
+
+    .download-unavailable {
+        background-color:colors.$form-outline-unselect;
     }
 
 }
