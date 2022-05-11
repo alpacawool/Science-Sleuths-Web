@@ -51,7 +51,10 @@ export const ResponseTable = (props) => {
 
 
   return (
-    <div className="response-table-container">
+    <div 
+      className={`${props.openDrawer ? "" : "collapsed-response-table-container"} 
+      response-table-container`}
+    >
       <ObservationModal
       open={open} 
       close={closeObservation}

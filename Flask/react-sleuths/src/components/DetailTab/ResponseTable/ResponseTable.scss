@@ -28,10 +28,19 @@
     /* Response Table */
     .MuiPaper-root {
         height:60vh;
-        width: 80vw;
+        width: 85vw;
+        transition: width 0.5s ease-in-out;
         overflow: auto;   
     }
 
+}
+
+.collapsed-response-table-container {
+    .MuiPaper-root {
+        height:60vh;
+        width: 92vw;
+        overflow: auto;   
+    }
 }
 
 @media screen and (max-width: 1366px) {
@@ -40,10 +49,59 @@
 
         .MuiPaper-root {
             height:50vh;
-            width: 75vw;
+            width: 78vw;
         }
    }
+
+   .collapsed-response-table-container {
+        .MuiPaper-root {
+            height:60vh;
+            width: 88vw;
+        }
+    }
+
 }
+
+
+@media screen and (max-width: 1024px) {
+   
+    .response-table-container {
+
+        .MuiPaper-root {
+            height:50vh;
+            width: 70vw;
+        }
+   }
+
+   .collapsed-response-table-container {
+        .MuiPaper-root {
+            height:60vh;
+            width: 85vw;
+        }
+    }
+
+}
+
+
+@media screen and (max-width: 900px) {
+   
+    .response-table-container {
+
+        .MuiPaper-root {
+            height:50vh;
+            width: 65vw;
+        }
+   }
+
+   .collapsed-response-table-container {
+        .MuiPaper-root {
+            height:60vh;
+            width: 80vw;
+        }
+    }
+
+}
+
 
 @media screen and (max-width: 450px) {
     .response-table-container {

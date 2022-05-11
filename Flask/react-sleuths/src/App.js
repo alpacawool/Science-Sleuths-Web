@@ -33,10 +33,13 @@ function App() {
             updateDrawer={updateDrawer}
           />}>
           <Route path="/dash" element={<Projects />} />
-          <Route path="/dash/projects" element={<Projects />} />
+          <Route path="/dash/projects" 
+            element={<Projects />} 
+            openDrawer={openDrawer}
+          />
           <Route path="/dash/projects/:project_id" 
             element={<SingleProject 
-              openDrawer={openDrawer} 
+            openDrawer={openDrawer} 
             />} />
           <Route path="/dash/projects/new" element={<NewProject />} />
         </Route>
