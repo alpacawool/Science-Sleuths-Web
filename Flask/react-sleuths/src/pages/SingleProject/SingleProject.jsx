@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation} from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -14,7 +14,7 @@ import { DetailTab } from "../../components/DetailTab/DetailTab";
 
 import "./SingleProject.scss";
 
-const SingleProject = () => {
+const SingleProject = (props) => {
   const { project_id } = useParams();
   const [project, setProject] = useState({});
   const [observations, setObservations] = useState({});
@@ -93,7 +93,9 @@ const SingleProject = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} className="description-container">
-            <span className="description-paragraph-title">Description</span>
+            <span className="description-paragraph-title">
+              Description
+            </span>
             <p className="description-paragraph">{project.description}</p>
           </Grid>
 
@@ -121,6 +123,7 @@ const SingleProject = () => {
               <DetailTab
                 questions={project.questions}
                 observations={observations}
+                {...props}
               />
             ) : (
               <p>There are no observations yet.</p>

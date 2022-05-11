@@ -1,17 +1,30 @@
-import React from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import Modal from '@mui/material/Modal';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import './ObservationModal.scss'
+import { ObservationQuestion } from './ObservationQuest/ObservationQuestion';
 
 export const ObservationModal = (props) => {
+
+
   return (
     <Modal
         open = {props.open}
         onClose =  {props.close}
-        className="observation-modal"
+        className={`${props.openDrawer ? "" : "collapsed-modal"} observation-modal`}
     >
+    <div className="observation-modal-container">
         {props.observation.responses.length > 0 ? (
             <div className='observation-modal-div'>
+                <button 
+                  onClick={props.close}
+                  className="close-observation-button">
+                <ArrowBackIcon
+                    className="close-observation-arrow"
+                />
+                  Back to Project
+                </button>
                 <h1>{props.observation.title}</h1>
                 <ul>
                 <li>
@@ -30,18 +43,31 @@ export const ObservationModal = (props) => {
                         {props.observation.date}
                     </span>
                 </li>
-                {props.questions.map((listItem, index) =>
-                <li key={index}>
-                    <span className="observation-question-prompt">
-                    Q{index+1}. [True or False] {listItem.prompt} 
+
+
+                <li>
+                    <span className="observation-label-text">
+                        {props.openDrawer}
                     </span>
-                </li>)}
+                    <span className="observation-field-text">
+                    </span>
+                </li>
+
+                {props.questions.map((listItem, index) =>
+                <ObservationQuestion 
+                    key={index}
+                    index={index}
+                    response={props.observation.responses[index]}
+                    question={listItem}
+                />
+                )}
                 </ul>
      
             </div>
         ) : (
         <p></p>
         )}
+    </div>
     </Modal>
   )
 }

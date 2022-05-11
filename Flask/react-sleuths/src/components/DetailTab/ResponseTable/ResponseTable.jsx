@@ -57,6 +57,7 @@ export const ResponseTable = (props) => {
       close={closeObservation}
       observation={observation}
       questions={props.questions}
+      {...props}
       />
       <TableContainer
         component={Paper}

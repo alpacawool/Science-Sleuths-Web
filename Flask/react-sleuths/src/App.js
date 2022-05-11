@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Projects from './pages/Projects/Projects';
 import SingleProject from './pages/SingleProject/SingleProject';
@@ -9,6 +10,9 @@ import { ExternalView } from './components/Layouts/ExternalView/ExternalView';
 
 
 function App() {
+
+  const [openDrawer, setOpenDrawer] = useState(true);;
+  const updateDrawer = () => setOpenDrawer(!openDrawer);
 
   return (
     <div className="App">
@@ -23,10 +27,17 @@ function App() {
           <Route path="signup" element={<Signup />} />
         </Route>
         {/* Internal */}
-        <Route path="/dash" element={<Dashboard />}>
+        <Route path="/dash" 
+          element={<Dashboard 
+            openDrawer={openDrawer}
+            updateDrawer={updateDrawer}
+          />}>
           <Route path="/dash" element={<Projects />} />
           <Route path="/dash/projects" element={<Projects />} />
-          <Route path="/dash/projects/:project_id" element={<SingleProject />} />
+          <Route path="/dash/projects/:project_id" 
+            element={<SingleProject 
+              openDrawer={openDrawer} 
+            />} />
           <Route path="/dash/projects/new" element={<NewProject />} />
         </Route>
       </Routes>

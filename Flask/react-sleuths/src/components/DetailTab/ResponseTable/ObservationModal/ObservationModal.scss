@@ -2,16 +2,66 @@
 @use './../../../../utilities/css/sizes';
 
 .observation-modal {
-    position: absolute;
-    margin:auto;
-    height:50%;
-    width:50%;
-    background-color:yellow;
-    margin-left:calc(sizes.$drawer-width + 15%);
+    background-color:colors.$white;
+    margin-left:sizes.$drawer-width;
+
+    /* Force scrollbar to appear
+    * Credits to @Codemaker from 
+    * https://stackoverflow.com/questions/35663653/ */
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: colors.$form-outline-unselect;
+        -webkit-box-shadow: colors.$scroll-bar;
+    }
+
+
+    .observation-modal-container {
+        width:100%;
+        height:100%;
+        overflow:auto;
+    }
 
     .observation-modal-div {
-        background-color:pink;
+        background-color:colors.$white;
         border:0px;
         padding:1rem;
     }
+
+    .MuiBackdrop-root {
+        background-color:colors.$white;
+    }
 }
+
+.collapsed-modal {
+    margin-left:sizes.$drawer-collapse-width;
+}
+
+/* Tablet */
+@media screen and (max-width: 768px) {
+    .observation-modal {
+        margin-left: sizes.$drawer-collapse-width;
+    }
+
+    .collapsed-modal {
+        margin-left:0rem;
+    }
+    
+}
+
+/* Smartphone */
+@media screen and (max-width: 450px) {
+    .observation-modal {
+        margin-left: 0rem;
+    }
+
+    .collapsed-modal {
+        margin-left:0rem;
+    }
+    
+}
+

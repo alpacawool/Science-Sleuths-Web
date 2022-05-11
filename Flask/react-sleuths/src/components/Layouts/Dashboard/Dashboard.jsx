@@ -26,12 +26,11 @@ import { auth } from "../../../utilities/js/firebase";
 
 import "./Dashboard.scss";
 
-export const Dashboard = ({ children }) => {
+export const Dashboard = (props) => {
   /*
     Drawer logic flow - Drawer will apply collapsed CSS classes
     to minimize drawer with the toggle onClick function.
   */
-  const [openDrawer, setOpenDrawer] = useState(true);
   const [name, setName] = useState({ firstName: "", lastName: "" });
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,19 +48,19 @@ export const Dashboard = ({ children }) => {
 
   return (
     <div className="dashboard">
-      <div className={`${openDrawer ? "" : "collapsed-header"} header`}>
-        <div className="toggle-icon" onClick={() => setOpenDrawer(!openDrawer)}>
-          {openDrawer ? <ChevronLeftIcon /> : <MenuIcon />}
+      <div className={`${props.openDrawer ? "" : "collapsed-header"} header`}>
+        <div className="toggle-icon" onClick={() => props.updateDrawer()}>
+          {props.openDrawer ? <ChevronLeftIcon /> : <MenuIcon />}
         </div>
         <div className="title"></div>
       </div>
 
       <div className="container">
-        <aside className={`${openDrawer ? "" : "collapsed"} drawer`}>
+        <aside className={`${props.openDrawer ? "" : "collapsed"} drawer`}>
           <div>
             <div
               className="mobile-close-icon"
-              onClick={() => setOpenDrawer(!openDrawer)}
+              onClick={() => props.updateDrawer()}
             >
               <CloseIcon />
             </div>
@@ -98,9 +97,9 @@ export const Dashboard = ({ children }) => {
           </div>
         </aside>
 
-        <div className={`${openDrawer ? "" : "collapsed-content"} content`}>
+        <div className={`${props.openDrawer ? "" : "collapsed-content"} content`}>
           {/* Render content in pages with react-router */}
-          <Outlet />
+          <Outlet/>
         </div>
       </div>
     </div>
