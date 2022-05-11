@@ -18,7 +18,7 @@ const Projects = () => {
       <br></br>
       {isError && <p>Something went wrong...</p>}
       {isLoading && <p>Loading...</p>}
-      {(!data || data.length == 0) && !isLoading && <p>You don't have any projects.</p>}
+      {(!data || data.length === 0) && !isLoading && <p>You don't have any projects.</p>}
       {data && <ProjectTable projects={data} />}
     </div>
   );

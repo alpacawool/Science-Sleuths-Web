@@ -87,7 +87,7 @@ export const NewProjectForm = () => {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(newProject)
     };
-    fetch('/create-new-project', requestOptions)
+    fetch(`/users/${user_id}/projects/create`, requestOptions)
       .then(response => {
         if (response.status === 200) {
           // Navigate to projects page

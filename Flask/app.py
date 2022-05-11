@@ -1,5 +1,7 @@
 import json
 from functools import wraps
+from turtle import setundobuffer
+from wsgiref import validate
 
 
 from firebase_admin import auth, exceptions
@@ -13,6 +15,73 @@ from models import *
 load_dotenv()
 
 TOKEN_TTL_IN_DAYS = 5
+
+# Wrapper that validates that the given user_id matches the user_id on the claims
+def validate_user(func):
+    @wraps(func)
+    def wrapper(user_id, *args, **kwargs):
+        # ensure that the user has a session cookie
+        session_cookie = request.cookies.get('session')
+        if not session_cookie:
+            return {'message': 'No session cookie provided.'}, 400
+        try:
+            # verify the session cookie is valid
+            decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
+            # verify user if provided
+            if user_id != decoded_claims.get("uid"):
+                return {'message': 'Unauthorized.'}, 401
+            return func(user_id, *args, **kwargs)
+        # bug workaround for session cookies used too early
+        except auth.InvalidSessionCookieError as e:
+            print(e)
+            if str(e).startswith("Token used too early"):
+                if user_id != decoded_claims.get("uid"):
+                    return {'message': 'Unauthorized.'}, 401
+                return func(user_id, *args, **kwargs)
+            return {'message': 'Invalid session cookie.'}, 400
+        except Exception as e:
+            print(e)
+            return {'message': 'Error validating session cookie.'}, 400
+    return wrapper
+
+# Wrapper that validates that the given project_id belongs to the user_id on the claims
+def validate_project(func):
+    @wraps(func)
+    def wrapper(project_id, *args, **kwargs):
+        # ensure that the user has a session cookie
+        session_cookie = request.cookies.get('session')
+        if not session_cookie:
+            return {'message': 'No session cookie provided.'}, 400
+        try:
+            # verify the session cookie is valid
+            decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
+            user_id = decoded_claims.get("uid")
+            # ensure the user has access to the project_id
+            user_dict = get_user(user_id)
+            owned_projects = user_dict.get("owned_projects")
+            if owned_projects:
+                for project in owned_projects:
+                    if project.get("project_id") == project_id:
+                        return func(project_id, *args, **kwargs)
+                return {'message': 'Unauthorized.'}, 401
+        # bug workaround for session cookies used too early     
+        except auth.InvalidSessionCookieError as e:
+            print(e)
+            if str(e).startswith("Token used too early"):
+                user_id = decoded_claims.get("uid")
+                # ensure the user has access to the project_id
+                user_dict = get_user(user_id)
+                owned_projects = user_dict.get("owned_projects")
+                if owned_projects:
+                    for project in owned_projects:
+                        if project.get("project_id") == project_id:
+                            return func(project_id, *args, **kwargs)
+                    return {'message': 'Unauthorized.'}, 401
+            return {'message': 'Invalid session cookie.'}, 400
+        except:
+            print("Error validating session cookie.")
+            return {'message': 'Error validating session cookie.'}, 400
+    return wrapper
 
 
 app = Flask(
@@ -98,144 +167,95 @@ def create_user():
 
 
 @app.route('/users/<string:user_id>/projects', methods=['GET', 'POST'])
+@validate_user
 def get_projects(user_id):
     """
     Returns list of projects owned by the user
     :param user_id: ID of user
     """
-    # ensure that the user has a session cookie
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
-    try:
-        # verify the session cookie is valid
-        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        # check that the user_id matches the claims uid
-        if decoded_claims.get("user_id") != user_id:
-            return {'message': 'Not authorized'}, 401
-        # return the data
-        owned_projects = get_all_project_details(user_id)
-        if owned_projects:
-            return json.dumps(owned_projects, default=vars)
-        return {}
-    except auth.InvalidSessionCookieError as e:
-        print(e)
-        # bug workaround for session cookies used too early
-        if str(e).startswith("Token used too early"):
-            print("ERROR: returning data anyways")
-            owned_projects = get_all_project_details(user_id)
-            if owned_projects:
-                return json.dumps(owned_projects, default=vars)
-            return {}
-        return {'message': 'Invalid session cookie.'}, 400
+    owned_projects = get_all_project_details(user_id)
+    if owned_projects:
+        return json.dumps(owned_projects, default=vars)
+    return {}
 
 
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
+@validate_project
 def get_single_project(project_id):
     """
     Returns single project base info including
     - owner_id, description, questions, question info
     :param project_id: ID of project
     """
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
-    try:
-        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        # check that the project_id is owned by user
-        user_id = decoded_claims.get("uid")
-        if user_id:
-            user_dict = get_user(user_id)
-            owned_projects = user_dict.get("owned_projects")
-            if owned_projects:
-                # ensure project is owned by user
-                for project in owned_projects:
-                    if project.get("project_id") == project_id:
-                        single_project = get_project(project_id)
-                        if single_project:
-                            return json.dumps(single_project, default=vars)
-                        return {}
-                return {'message': 'Unauthorized.'}, 401      
-    except auth.InvalidSessionCookieError as e:
-        print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+    single_project = get_project(project_id)
+    if single_project:
+        return json.dumps(single_project, default=vars)
+    return {}
 
 
 @app.route('/projects/<string:project_id>/observations', methods=['GET', 'POST'])
+@validate_project
 def get_project_observations(project_id):
     """
     Returns observations list of a single project
     :param project_id: ID of project
     """
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
-    try:
-        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        # check that the project_id is owned by user
-        user_id = decoded_claims.get("uid")
-        if user_id:
-            user_dict = get_user(user_id)
-            owned_projects = user_dict.get("owned_projects")
-            if owned_projects:
-                # project is owned by user
-                for project in owned_projects:
-                    if project.get("project_id") == project_id:
-                        db = firestore.client()
-                        obs_stream = db.collection(u'Projects').document(project_id)\
-                            .collection(u'Observations').stream()
-                        observations_list = []
-                        for obs in obs_stream:
-                            obs_data = obs.to_dict()
-                            # sad we have to convert to str because DatetimeWithNanoseconds
-                            obs_data['datetime']  = str(obs_data['datetime'])
-                            for response in obs_data['responses']:
-                                # also converting to str because DatetimeWithNanoseconds
-                                response['response'] = str(response['response'])
-                            observations_list.append(obs_data)
-                        return json.dumps(observations_list)
-                return {'message': 'Unauthorized.'}, 401      
-    except auth.InvalidSessionCookieError as e:
-        print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+    db = firestore.client()
+    obs_stream = db.collection(u'Projects').document(project_id)\
+        .collection(u'Observations').stream()
+    observations_list = []
+    for obs in obs_stream:
+        obs_data = obs.to_dict()
+        # sad we have to convert to str because DatetimeWithNanoseconds
+        obs_data['datetime']  = str(obs_data['datetime'])
+        for response in obs_data['responses']:
+            # also converting to str because DatetimeWithNanoseconds
+            response['response'] = str(response['response'])
+        observations_list.append(obs_data)
+    return json.dumps(observations_list)
 
 
-@app.route('/create-new-project', methods=['GET','POST'])
-def create_new_project():
+@app.route('/users/<string:user_id>/projects/create', methods=['GET', 'POST'])
+@validate_user
+def create_new_project(user_id):
     """
     Adds a new project to the firestore database
     :return: the project ID
     """
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
-    try:
-        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        content = request.json
+    content = request.json
 
-        new_project = Project(
-            content['owner_id'],
-            content['title'],
-            content['description'],
-            []
+    new_project = Project(
+        user_id,
+        content['title'],
+        content['description'],
+        []
+    )
+
+    for question in content['questions']:
+        new_question = Question(
+            question['question_num'],
+            question['prompt'],
+            question['type'],
+            question['choices'],
+            question['range_min'],
+            question['range_max']
         )
+        new_project.add_question(new_question)
 
-        for question in content['questions']:
-            new_question = Question(
-                question['question_num'],
-                question['prompt'],
-                question['type'],
-                question['choices'],
-                question['range_min'],
-                question['range_max']
-            )
-            new_project.add_question(new_question)
+    new_project_id = create_project(new_project)
+    return {"project_id" : new_project_id}
 
-        new_project_id = create_project(new_project)
-        return {"project_id" : new_project_id}
-    except auth.InvalidSessionCookieError as e:
-        print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+@app.route('/projects/<string:project_id>/delete', methods=['GET', 'DELETE'])
+@validate_project
+def delete_existing_project(project_id):
+    if delete_project(project_id) == 0:
+        return {'message': 'Success!'}, 200
+    return {'message': 'Error deleting project.'}, 400
+
+@app.route('/projects/<string:project_id>/update', methods=['GET', 'PUT'])
+@validate_project
+def update_project(project_id):
+    pass
 
 
 @app.route('/')

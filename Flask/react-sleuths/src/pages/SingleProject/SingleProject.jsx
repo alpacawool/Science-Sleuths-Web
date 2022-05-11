@@ -5,8 +5,7 @@
  * Makes asynchronous calls to retrieve project summary and observations
  */
 
-import { useEffect, useState, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -17,8 +16,6 @@ import { useFetchHook } from "../../utilities/js/fetchPostHelper";
 
 const SingleProject = () => {
   const { project_id } = useParams();
-  const location = useLocation();
-  let user_id = location.state.user_id;
 
   const [{ projData, projIsLoading, projIsError }] = useFetchHook(`/projects/${project_id}`, { method: "POST" }, "projIsLoading", "projIsError", "projData");
   const [{ obsData, obsIsLoading, obsIsError }] = useFetchHook(`/projects/${project_id}/observations`, { method: "POST" }, "obsIsLoading", "obsIsError", "obsData");
