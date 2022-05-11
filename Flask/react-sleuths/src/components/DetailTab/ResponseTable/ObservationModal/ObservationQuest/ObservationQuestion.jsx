@@ -7,7 +7,7 @@ export const ObservationQuestion = (props) => {
     "Decimal", "Multiple Choice", "Text", "Date"]
 
   return (
-    <li>
+    <li className="observation-question-li">
         <span className="observation-question-index">
          Q{props.index+1}.
         </span>

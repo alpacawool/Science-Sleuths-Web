@@ -5,6 +5,11 @@
     background-color:colors.$white;
     margin-left:sizes.$drawer-width;
 
+    h1 {
+        margin-top:1.5rem;
+        margin-bottom:1.5rem;
+    }
+
     /* Force scrollbar to appear
     * Credits to @Codemaker from 
     * https://stackoverflow.com/questions/35663653/ */
@@ -29,9 +34,44 @@
     .observation-modal-div {
         background-color:colors.$white;
         border:0px;
-        padding:1rem;
+        padding:2rem;
+        border-radius:0.3em;
+
+        .close-observation-button {
+            all:unset;
+            margin-bottom:1rem;
+            display:flex;
+            background-color:colors.$primary-color;
+            padding:0.5rem;
+            border-radius:0.3em;
+            color:colors.$primary-color-text;
+            justify-content: center;
+
+            .close-observation-arrow {
+                height:0.8em;
+                margin-right:0.5rem;
+            }
+
+            &:hover {
+                background-color: colors.$primary-color-darker;
+                cursor:pointer;
+            }
+        }
+
+
+        .observation-label-text {
+            font-weight:800;
+            margin-right:1rem;
+        }
+
+        li {
+            margin-bottom:0.4rem;
+        }
+
+
     }
 
+    /* Background behind modal */
     .MuiBackdrop-root {
         background-color:colors.$white;
     }
@@ -57,6 +97,7 @@
 @media screen and (max-width: 450px) {
     .observation-modal {
         margin-left: 0rem;
+        padding:0rem;
     }
 
     .collapsed-modal {

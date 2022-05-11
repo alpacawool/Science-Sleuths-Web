@@ -12,7 +12,13 @@ export const ObservationModal = (props) => {
     <Modal
         open = {props.open}
         onClose =  {props.close}
-        className={`${props.openDrawer ? "" : "collapsed-modal"} observation-modal`}
+        className={`${props.openDrawer ? "" : "collapsed-modal"} 
+          observation-modal`}
+        sx={{
+          "&:focus":{
+            outline: "none"
+          }
+        }}
     >
     <div className="observation-modal-container">
         {props.observation.responses.length > 0 ? (
