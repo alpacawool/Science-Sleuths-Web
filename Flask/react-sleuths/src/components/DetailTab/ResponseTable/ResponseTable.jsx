@@ -2,6 +2,9 @@
  * ResponseTable.jsx
  * Displays list of observations for a single project
  */
+
+import React, {useState} from 'react';
+
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,12 +14,50 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
 import {formatDate} from './../../../utilities/js/dateHelper.js'
+import { ObservationModal } from './ObservationModal/ObservationModal.jsx';
 import './ResponseTable.scss'
 
+
 export const ResponseTable = (props) => {
+  
+  const [observation, setObservation] = useState({
+    first_name: '',
+    last_name: '',
+    date: '',
+    title: '',
+    responses: [],
+  });
+
+  const [open, setOpen] = useState(false);
+  const openObservation = (
+    firstName, 
+    lastName,
+    date,
+    title,
+    responses
+  ) => {
+    // Set current observation
+    setObservation(prevObservation => ({
+      ...prevObservation,
+      ['first_name']: firstName,
+      ['last_name']: lastName,
+      ['date']: date,
+      ['title']: title,
+      ['responses']: responses,
+    }));
+    setOpen(true);
+  }
+  const closeObservation = () => setOpen(false);
+
 
   return (
     <div className="response-table-container">
+      <ObservationModal
+      open={open} 
+      close={closeObservation}
+      observation={observation}
+      questions={props.questions}
+      />
       <TableContainer
         component={Paper}
       >
@@ -25,7 +66,11 @@ export const ResponseTable = (props) => {
           aria-label="Project Detail Table"
           sx = {{
             width: "max-content",
-            height: "max-content"
+            height: "max-content",
+            "& .MuiTableRow-root:hover": {
+              backgroundColor: "#fcf7f7",
+              cursor: "pointer"
+            }
           }}
         >
           <TableHead>
@@ -45,7 +90,16 @@ export const ResponseTable = (props) => {
             {/* Log name and date */}
             {props.observations.map((row, index) => (
 
-              <TableRow key={index}>
+              <TableRow 
+                key={index}
+                onClick={()=>
+                  openObservation(
+                    row.first_name,
+                    row.last_name,
+                    formatDate(row.datetime),
+                    row.title,
+                    row.responses
+                  )}>
                 <TableCell
                   className="name-cell"
                    >
@@ -108,6 +162,7 @@ export const ResponseTable = (props) => {
           </TableBody>
         </Table>
       </TableContainer>
+  
     </div>
   )
 }

@@ -1,0 +1,17 @@
+@use './../../../../utilities/css/colors';
+@use './../../../../utilities/css/sizes';
+
+.observation-modal {
+    position: absolute;
+    margin:auto;
+    height:50%;
+    width:50%;
+    background-color:yellow;
+    margin-left:calc(sizes.$drawer-width + 15%);
+
+    .observation-modal-div {
+        background-color:pink;
+        border:0px;
+        padding:1rem;
+    }
+}

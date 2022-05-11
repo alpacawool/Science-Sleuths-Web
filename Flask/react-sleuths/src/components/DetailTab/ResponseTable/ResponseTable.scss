@@ -29,15 +29,7 @@
     .MuiPaper-root {
         height:60vh;
         width: 80vw;
-        overflow: auto;
-
-        /* Freeze column */
-        .name-cell {
-            background-color: colors.$white;
-            position: -webkit-sticky;
-            position:sticky;
-            left: 0;
-        }
+        overflow: auto;   
     }
 
 }
@@ -59,12 +51,6 @@
         .MuiPaper-root {
             height:50vh;
             width: 85vw;
-
-            /* Do not freeze column on small device 
-             * to allow more table real-estate */
-            .name-cell {
-                position: relative;
-            }
         }
 
         .truncate-text {
