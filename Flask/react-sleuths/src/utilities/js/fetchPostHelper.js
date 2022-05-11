@@ -4,7 +4,7 @@ Reducer idea and implementation adapted from https://www.robinwieruch.de/react-h
 
 import { useReducer, useEffect, useRef } from "react";
 
-// creates Fetch Post Request with the JWT token
+// creates Fetch Post Request with JWT header
 export const createFetchRequest = (idToken) => {
   return {
     method: "POST",
@@ -17,7 +17,8 @@ export const createFetchRequest = (idToken) => {
   };
 };
 
-export const dataFetchReducer = (state, action) => {
+// reducer for Retch requests
+const dataFetchReducer = (state, action) => {
   switch (action.type) {
     case "FETCH_INIT":
       return {
@@ -44,13 +45,13 @@ export const dataFetchReducer = (state, action) => {
 };
 
 // custom hook for data fetching
-export const useFetchHook = (initialUrl, initialData) => {
+export const useFetchHook = (resource, init, isLoadingName = "isLoading", isErrorName = "isError", dataName = "data") => {
   const isInitialRender = useRef(true);
 
   const [state, dispatch] = useReducer(dataFetchReducer, {
     isLoading: false,
     isError: false,
-    data: false,
+    data: null,
   });
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export const useFetchHook = (initialUrl, initialData) => {
       dispatch({ type: "FETCH_INIT" });
 
       try {
-        const result = await fetch(initialUrl, initialData);
+        const result = await fetch(resource, init);
         // on success and component still mounted
         if (!didCancel) {
           const data = await result.json();
@@ -87,5 +88,5 @@ export const useFetchHook = (initialUrl, initialData) => {
     };
   }, []);
 
-  return [state];
+  return [{[isLoadingName]: state.isLoading, [isErrorName]: state.isError, [dataName]: state.data}];
 };
