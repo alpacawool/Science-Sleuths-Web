@@ -1,6 +1,5 @@
 import json
 from functools import wraps
-from tkinter import E
 import io
 from firebase_admin import auth, exceptions
 from dotenv import load_dotenv
