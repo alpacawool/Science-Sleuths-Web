@@ -58,7 +58,7 @@
             background-color: colors.$primary-color;
             width:sizes.$drawer-width;
             transition: all 0.7s ease-in-out;
-            z-index:10;
+            z-index:1500;
 
             .logo {
                 height: sizes.$header-height;

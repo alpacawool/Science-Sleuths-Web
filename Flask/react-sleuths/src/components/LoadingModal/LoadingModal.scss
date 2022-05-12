@@ -2,10 +2,12 @@
 
 .loading-modal {
     /* Place on top of dashboard */
-    z-index:11;
+    z-index:5000;
     height:100%;
     width:100%;
     display:flex;
+    position:relative;
+    z-index:1501 !important;
     align-items:center;
 
     .loading-modal-div {
