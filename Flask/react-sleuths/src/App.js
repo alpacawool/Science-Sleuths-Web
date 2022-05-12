@@ -13,6 +13,7 @@ function App() {
 
   const [openDrawer, setOpenDrawer] = useState(true);;
   const updateDrawer = () => setOpenDrawer(!openDrawer);
+  const closeDrawer = () => setOpenDrawer(true)
 
   return (
     <div className="App">
@@ -44,6 +45,7 @@ function App() {
           <Route path="/dash/projects/:project_id" 
             element={<SingleProject 
             openDrawer={openDrawer} 
+            closeDrawer={closeDrawer}
             />} />
           <Route path="/dash/projects/new" element={<NewProject />} />
         </Route>

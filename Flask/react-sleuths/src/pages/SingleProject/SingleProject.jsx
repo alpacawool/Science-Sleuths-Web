@@ -44,6 +44,13 @@ const SingleProject = (props) => {
     }
   }, [user_id, project_id]);
 
+  useEffect(() => {
+    if (window.innerWidth <= 450) {
+      console.log(props.openDrawer)
+      props.closeDrawer();
+    } 
+  }, [])
+
   const onClickDownload = () => {
     if (user_id) {
       fetch(`/projects/${project_id}/download`, { method: "POST" })
