@@ -4,13 +4,18 @@
  */
 import { useEffect, useState, useRef } from "react";
 import { ProjectTable } from "../../components/ProjectTable/ProjectTable";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Projects = () => {
+
+  let navigate = useNavigate();
+
   const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState("");
   const location = useLocation();
-  let user_id = location.state.user_id;
+  const user_id = location.state.user_id;
+  const display_name = location.state.display_name;
+  
   let count = useRef(0);
 
   useEffect(() => {
@@ -34,9 +39,27 @@ const Projects = () => {
     }
   }, [projects.length, user_id]);
 
+  const onNewRandomButtonClick = () => {
+    fetch('/create-sample-project')
+    .then(response => {
+      if (response.status === 200) {
+         return response.json();
+      } else {
+        throw new Error();
+      }
+    })
+    .then(data => {
+      navigate(`/dash/projects/${data.project_id}`, {replace: true, state: location.state});
+    })
+    .catch(error => console.log(error))
+  }
+
   return (
     <div>
       <h1>Projects</h1>
+      <button onClick={onNewRandomButtonClick}>
+        Create a random project
+      </button>
       <br></br>
       {projects.length > 0 ? (
         <ProjectTable projects={projects} />
