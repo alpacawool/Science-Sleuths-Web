@@ -34,7 +34,6 @@ export const QuestionBox = (props) => {
   // Update newProject state question list
   useEffect(() => {
     props.updateQuestionList(props.index, projQuestion)
-    console.log(projQuestion)
   }, [projQuestion])
 
   const handleQuestionChange = e => {

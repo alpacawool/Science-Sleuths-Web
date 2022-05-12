@@ -32,7 +32,6 @@ export const ProjectTable = (props) => {
     className={`${props.openDrawer ? "" : "collapsed-projects-list-container"} 
     projects-list-container`}
     >
-    <p>{console.log(props.openDrawer)}</p>
       <TableContainer
         component={Paper}
       >

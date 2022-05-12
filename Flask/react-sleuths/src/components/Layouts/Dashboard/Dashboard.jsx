@@ -45,7 +45,18 @@ export const Dashboard = (props) => {
         console.log(err);
       });
   };
+  
+  /*
+    On Mobile, toggle will be open on default, this forces it
+    to close upon navigation
+  */
+  useEffect(() => {
+    if (window.innerWidth <= 450) {
+      props.updateDrawer()
+    } 
 
+  }, [location])
+  
   return (
     <div className="dashboard">
       <div className={`${props.openDrawer ? "" : "collapsed-header"} header`}>
