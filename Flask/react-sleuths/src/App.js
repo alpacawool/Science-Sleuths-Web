@@ -13,7 +13,7 @@ function App() {
 
   const [openDrawer, setOpenDrawer] = useState(true);;
   const updateDrawer = () => setOpenDrawer(!openDrawer);
-  const closeDrawer = () => setOpenDrawer(true)
+  const closeDrawer = () => setOpenDrawer(false)
 
   return (
     <div className="App">
