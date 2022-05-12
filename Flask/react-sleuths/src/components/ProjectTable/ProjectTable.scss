@@ -1,3 +1,6 @@
+@use './../../utilities/css/sizes';
+@use './../../utilities/css/colors';
+
 .MuiTableRow-root th{
     font-family: 'DM Sans', sans-serif;
 }
@@ -16,3 +19,104 @@
     text-overflow: ellipsis;
 }
 
+.projects-list-container {
+    .MuiPaper-root {
+        transition: width 0.5s ease-in-out;
+        width:calc(98vw - sizes.$drawer-width);
+        height:80vh;
+        overflow:auto;
+    }
+
+    /* Force scrollbar to appear
+    * Credits to @Codemaker from 
+    * https://stackoverflow.com/questions/35663653/ */
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: colors.$form-outline-unselect;
+        -webkit-box-shadow: colors.$scroll-bar;
+    }
+
+}
+
+.collapsed-projects-list-container {
+
+    .MuiPaper-root {
+        width:calc(98vw - sizes.$drawer-collapse-width);
+    }
+}
+
+/* Laptop */
+@media screen and (max-width: 1366px) {
+
+    .projects-list-container {
+        .MuiPaper-root {
+            width:calc(95vw - sizes.$drawer-width);
+            height:80vh;
+        }
+    }
+    
+    .collapsed-projects-list-container {
+    
+        .MuiPaper-root {
+            width:calc(95vw - sizes.$drawer-collapse-width);
+        }
+    } 
+}
+
+
+@media screen and (max-width: 900px) {
+
+    .projects-list-container {
+        .MuiPaper-root {
+            width:calc(85vw - sizes.$drawer-width);
+            height:80vh;
+        }
+    }
+    
+    .collapsed-projects-list-container {
+    
+        .MuiPaper-root {
+            width:calc(85vw);
+        }
+    } 
+}
+
+
+@media screen and (max-width: 768px) {
+
+    .projects-list-container {
+        .MuiPaper-root {
+            width:calc(90vw - sizes.$drawer-collapse-width);
+            height:80vh;
+        }
+    }
+    
+    .collapsed-projects-list-container {
+    
+        .MuiPaper-root {
+            width:calc(90vw);
+        }
+    } 
+}
+
+@media screen and (max-width: 450px) {
+
+    .projects-list-container {
+        .MuiPaper-root {
+            width:90vw;
+            height:80vh;
+        }
+    }
+    
+    .collapsed-projects-list-container {
+    
+        .MuiPaper-root {
+            width:calc(90vw);
+        }
+    } 
+}
