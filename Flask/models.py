@@ -1,5 +1,5 @@
 import os
-import datetime
+from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
@@ -296,7 +296,8 @@ class Observation:
                                   source[u'title'])
 
         if u'datetime' in source:
-            observation.datetime = source[u'datetime']
+            # datetime in dict is stored as DatetimeWithNanoseconds
+            observation.datetime = str(source[u'datetime'])
 
         if u'responses' in source:
             for response_dict in source[u'responses']:
@@ -312,7 +313,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
-            u'datetime': self.datetime,
+            u'datetime': datetime.fromisoformat(self.datetime),
             u'responses': [response.to_dict() for response in self.responses]
         }
 
@@ -331,6 +332,14 @@ class Observation:
 
     def set_datetime(self, date_time):
         self.datetime = date_time
+
+
+class DatetimeWithNanoseconds:
+    """
+    A class representing Google Firebase's DatetimeWithNanoseconds.
+    """
+    def __init__(self) -> None:
+        pass
 
 
 class Response:
@@ -768,5 +777,8 @@ def add_example_data():
 
 
 if __name__ == "__main__":
-    pass
-
+    # project_id = "0XGU56ib2M8nQ51EDLB0"
+    # obs_list = get_all_project_observations(project_id)
+    # for obs in obs_list:
+    #     print(obs.from_dict(obs.to_dict()))
+    
