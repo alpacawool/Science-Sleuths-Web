@@ -1,9 +1,7 @@
-import json
 from functools import wraps
+from datetime import timedelta
 from tkinter import E
-import io
 from firebase_admin import auth, exceptions
-from dotenv import load_dotenv
 from flask import Flask, send_from_directory, request, jsonify, abort, make_response
 from flask_cors import CORS, cross_origin
 
@@ -102,7 +100,7 @@ def session_login():
         # token_list[0] = 'Bearer', token_list[1] = JWT
         id_token = token_list[1]
         # Set session expiration to TOKEN_TTL_IN_DAYS days.
-        expires_in = datetime.timedelta(days=TOKEN_TTL_IN_DAYS)
+        expires_in = timedelta(days=TOKEN_TTL_IN_DAYS)
         # Create the session cookie. This will also verify the ID token
         # in the process. The session cookie will have the same claims as
         # the ID token.
@@ -110,7 +108,7 @@ def session_login():
                                                     expires_in=expires_in)
         response = jsonify({'status': 'success'})
         # Set cookie policy for session cookie.
-        expires = datetime.datetime.now() + expires_in
+        expires = datetime.now() + expires_in
         response.set_cookie(
             'session', session_cookie, expires=expires, httponly=True, secure=True)
         return response
