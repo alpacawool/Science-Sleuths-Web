@@ -390,7 +390,8 @@ def create_teacher(teacher: "Teacher") -> str:
 
     return teacher_ref[1].id
 
-def get_user(user_id: str) -> str:
+
+def get_user(user_id: str) -> dict:
     db = firestore.client()
     user = db.collection(u'Users').document(user_id).get()
     if user.exists:
@@ -470,37 +471,40 @@ def _delete_collection(coll_ref, batch_size=50):
         return _delete_collection(coll_ref, batch_size)
 
 
-def delete_project(project_id: str, owner_id: str):
+def delete_project(project_id: str) -> int:
     """
     Takes a project_id and deletes it from Firestore db. Also deletes the
     subcollection Observations and any existing documents in it along with the
     project summary from the owner_id.
     :param project_id: the project_id to delete
-    :param owner_id: the user_id of the owner of the project to delete
     """
     db = firestore.client()
 
-    # delete all docs in the subcollection Observations from the project
-    obs_ref = db.collection(u'Projects').document(project_id)\
-        .collection(u'Observations')
-    _delete_collection(obs_ref)
+    try:
+        # get the owner_id
+        proj = db.collection(u'Projects').document(project_id).get()
+        user_id = proj.to_dict()['owner_id']
+        # delete all docs in the subcollection Observations from the project
+        obs_ref = db.collection(u'Projects').document(project_id).collection(u'Observations')
+        _delete_collection(obs_ref)
+        # delete the project
+        db.collection(u'Projects').document(project_id).delete()
 
-    # delete the project
-    db.collection(u'Projects').document(project_id).delete()
-
-    # query for the project summary from the owner
-    proj_owner = db.collection(u'Users').document(owner_id).get()
-    if proj_owner.exists:
-        owned_projects = proj_owner.to_dict()['owned_projects']
-        for project in owned_projects:
-            if project['project_id'] == project_id:
-                # remove the project summary from owned_projects
-                owned_projects.remove(project)
-        # delete the project summary from the owner
-        db.collection(u'Users').document(owner_id).\
-            update({u'owned_projects': owned_projects})
-    else:
-        print(u'No such user exists!')
+        # query for the project summary from the owner
+        proj_owner = db.collection(u'Users').document(user_id).get()
+        if proj_owner.exists:
+            owned_projects = proj_owner.to_dict()['owned_projects']
+            for project in owned_projects:
+                if project['project_id'] == project_id:
+                    # remove the project summary from owned_projects
+                    owned_projects.remove(project)
+            # delete the project summary from the owner
+            db.collection(u'Users').document(user_id).\
+                update({u'owned_projects': owned_projects})
+            return 0
+    except Exception as e:
+        print(e)
+        return -1
 
 
 def modify_project_title(project_id: str, title: str):
@@ -768,10 +772,5 @@ def add_example_data():
 
 
 if __name__ == "__main__":
-    # some test data
-    user_id = "Iw9BIoRWI4cVUb9BHTDI"
-    project_id = "7RPNXZgpXeXSNHSKEaEe"
-    project = get_project(project_id)
-    for question in project.questions:
-        print(question.to_dict())
+    pass
 
