@@ -286,10 +286,11 @@ class Observation:
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
-        self.datetime = date_time  # set by calling function upon creation
+        self.datetime = date_time  # stored as datetime object
         self.responses = []  # contains response objects
 
     @staticmethod
+    # from Firestore dict
     def from_dict(source: dict) -> "Observation":
         observation = Observation(source[u'project_id'], source[u'author_id'],
                                   source[u'first_name'], source[u'last_name'],
@@ -306,6 +307,7 @@ class Observation:
 
         return observation
 
+    # to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'project_id': self.project_id,
@@ -317,6 +319,19 @@ class Observation:
             u'responses': [response.to_dict() for response in self.responses]
         }
 
+        return dest
+
+    # formats without nested objects
+    def format(self):
+        dest = {
+            u'project_id': self.project_id,
+            u'author_id': self.author_id,
+            u'first_name': self.first_name,
+            u'last_name': self.last_name,
+            u'title': self.title,
+            u'datetime': str(self.datetime),
+            u'responses': [response.format() for response in self.responses]
+        }
         return dest
 
     def add_response(self, response: "Response"):
@@ -334,14 +349,6 @@ class Observation:
         self.datetime = date_time
 
 
-class DatetimeWithNanoseconds:
-    """
-    A class representing Google Firebase's DatetimeWithNanoseconds.
-    """
-    def __init__(self) -> None:
-        pass
-
-
 class Response:
     """
     A class representing a Response object that is part of each observation
@@ -354,8 +361,10 @@ class Response:
 
     @staticmethod
     def from_dict(source: dict) -> "Response":
-        response = Response(source[u'question_num'], source[u'type'],
-                            source[u'response'])
+        resp = source[u'response']
+        if source[u'type'] == DATETIME:
+            resp = str(resp)
+        response = Response(source[u'question_num'], source[u'type'], resp)
 
         return response
 
@@ -365,7 +374,20 @@ class Response:
             u'type': self.type,
             u'response': self.response
         }
+        if self.type == DATETIME:
+            dest[u'response'] = datetime.fromisoformat(self.response)
 
+        return dest
+
+    # removes any nested objects
+    def format(self):
+        dest = {
+            u'question_num': self.question_num,
+            u'type': self.type,
+            u'response': self.response
+        }
+        if self.type == DATETIME:
+            dest[u'response'] = str(self.response)
         return dest
 
     def edit_response(self, response):
@@ -780,5 +802,8 @@ if __name__ == "__main__":
     # project_id = "0XGU56ib2M8nQ51EDLB0"
     # obs_list = get_all_project_observations(project_id)
     # for obs in obs_list:
-    #     print(obs.from_dict(obs.to_dict()))
-    
+    #     print(obs)
+    #     for res in obs.responses:
+    #         print(res)
+    pass
+

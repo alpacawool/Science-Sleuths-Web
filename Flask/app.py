@@ -78,8 +78,8 @@ def validate_project(func):
                             return func(project_id, *args, **kwargs)
                     return {'message': 'Unauthorized.'}, 401
             return {'message': 'Invalid session cookie.'}, 400
-        except:
-            print("Error validating session cookie.")
+        except Exception as e:
+            print(e)
             return {'message': 'Error validating session cookie.'}, 400
     return wrapper
 
@@ -134,21 +134,17 @@ def session_logout():
 def create_user():
     data = request.json
     # validate required request params were sent
-    missing_params = {"first_name": False, "last_name": False, "email": False, "user_id": False}
+    missing_params = []
     if data.get('first_name') is None or not data['first_name']:
-        missing_params['first_name'] = True
+        missing_params.append('first_name')
     if data.get('last_name') is None or not data['last_name']:
-        missing_params['last_name'] = True
+        missing_params.append('last_name')
     if data.get('email') is None or not data['email']:
-        missing_params['email'] = True
+        missing_params.append('email')
     if data.get('user_id') is None or not data['user_id']:
-        missing_params['user_id'] = True
-    missing_keys = []
-    for key in missing_params.keys():
-        if missing_params[key]:
-            missing_keys.append(key)
-    if len(missing_keys) > 0:
-        message = ', '.join(missing_keys) + " required."
+        missing_params.append('user_id')
+    if len(missing_params) > 0:
+        message = ', '.join(missing_params) + " required."
         return {'message': message}, 400
     try:
         # create user in Firestore
@@ -205,13 +201,7 @@ def get_project_observations(project_id):
         .collection(u'Observations').stream()
     observations_list = []
     for obs in obs_stream:
-        obs_data = obs.to_dict()
-        # sad we have to convert to str because DatetimeWithNanoseconds
-        obs_data['datetime']  = str(obs_data['datetime'])
-        for response in obs_data['responses']:
-            # also converting to str because DatetimeWithNanoseconds
-            response['response'] = str(response['response'])
-        observations_list.append(obs_data)
+        observations_list.append(Observation.from_dict(obs.to_dict()).format())
     return json.dumps(observations_list)
 
 
