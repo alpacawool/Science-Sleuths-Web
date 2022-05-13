@@ -17,6 +17,8 @@ import { useFetchHook } from "../../utilities/js/fetchPostHelper";
 
 const SingleProject = (props) => {
   const { project_id } = useParams();
+  const location = useLocation();
+  let user_id = location.state.user_id;
 
   const [{ projData, projIsLoading, projIsError }] = useFetchHook(`/projects/${project_id}`, { method: "POST" }, "projIsLoading", "projIsError", "projData");
   const [{ obsData, obsIsLoading, obsIsError }] = useFetchHook(`/projects/${project_id}/observations`, { method: "POST" }, "obsIsLoading", "obsIsError", "obsData");

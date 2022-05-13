@@ -73,8 +73,8 @@ const Projects = (props) => {
       <br></br>
       {isError && <p>Something went wrong...</p>}
       {isLoading && <p>Loading...</p>}
-      {(!data || data.length === 0) && !isLoading && <p>You don't have any projects.</p>}
-      {data && <ProjectTable projects={data} {...props} />}
+      {data && data.length == 0 && <p>You don't have any projects yet.</p>}
+      {data && <ProjectTable projects={data} {...props}/>}
     </div>
   );
 };
