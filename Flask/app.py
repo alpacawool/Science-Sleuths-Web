@@ -1,10 +1,8 @@
-import json
 from functools import wraps
+from datetime import timedelta
 from tkinter import E
-import io
 from firebase_admin import auth, exceptions
-from dotenv import load_dotenv
-from flask import Flask, send_from_directory, request, jsonify, abort
+from flask import Flask, send_from_directory, request, jsonify, abort, make_response
 from flask_cors import CORS, cross_origin
 
 from models import *
@@ -102,7 +100,7 @@ def session_login():
         # token_list[0] = 'Bearer', token_list[1] = JWT
         id_token = token_list[1]
         # Set session expiration to TOKEN_TTL_IN_DAYS days.
-        expires_in = datetime.timedelta(days=TOKEN_TTL_IN_DAYS)
+        expires_in = timedelta(days=TOKEN_TTL_IN_DAYS)
         # Create the session cookie. This will also verify the ID token
         # in the process. The session cookie will have the same claims as
         # the ID token.
@@ -110,7 +108,7 @@ def session_login():
                                                     expires_in=expires_in)
         response = jsonify({'status': 'success'})
         # Set cookie policy for session cookie.
-        expires = datetime.datetime.now() + expires_in
+        expires = datetime.now() + expires_in
         response.set_cookie(
             'session', session_cookie, expires=expires, httponly=True, secure=True)
         return response
@@ -132,21 +130,17 @@ def session_logout():
 def create_user():
     data = request.json
     # validate required request params were sent
-    missing_params = {"first_name": False, "last_name": False, "email": False, "user_id": False}
+    missing_params = []
     if data.get('first_name') is None or not data['first_name']:
-        missing_params['first_name'] = True
+        missing_params.append('first_name')
     if data.get('last_name') is None or not data['last_name']:
-        missing_params['last_name'] = True
+        missing_params.append('last_name')
     if data.get('email') is None or not data['email']:
-        missing_params['email'] = True
+        missing_params.append('email')
     if data.get('user_id') is None or not data['user_id']:
-        missing_params['user_id'] = True
-    missing_keys = []
-    for key in missing_params.keys():
-        if missing_params[key]:
-            missing_keys.append(key)
-    if len(missing_keys) > 0:
-        message = ', '.join(missing_keys) + " required."
+        missing_params.append('user_id')
+    if len(missing_params) > 0:
+        message = ', '.join(missing_params) + " required."
         return {'message': message}, 400
     try:
         # create user in Firestore
@@ -174,7 +168,7 @@ def get_projects(user_id):
     owned_projects = get_all_project_details(user_id)
     if owned_projects:
         return json.dumps(owned_projects, default=vars)
-    return {}
+    return json.dumps([])
 
 
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
@@ -188,7 +182,7 @@ def get_single_project(project_id):
     single_project = get_project(project_id)
     if single_project:
         return json.dumps(single_project, default=vars)
-    return {}
+    return json.dumps([])
 
 
 @app.route('/projects/<string:project_id>/observations', methods=['GET', 'POST'])
@@ -203,13 +197,7 @@ def get_project_observations(project_id):
         .collection(u'Observations').stream()
     observations_list = []
     for obs in obs_stream:
-        obs_data = obs.to_dict()
-        # sad we have to convert to str because DatetimeWithNanoseconds
-        obs_data['datetime']  = str(obs_data['datetime'])
-        for response in obs_data['responses']:
-            # also converting to str because DatetimeWithNanoseconds
-            response['response'] = str(response['response'])
-        observations_list.append(obs_data)
+        observations_list.append(Observation.from_dict(obs.to_dict()).format())
     return json.dumps(observations_list)
 
   
@@ -287,9 +275,7 @@ def create_new_project(user_id):
 
         new_project_id = create_project(new_project)
         return {"project_id" : new_project_id}
-    except auth.InvalidSessionCookieError as e:
-        print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+
 
 @app.route('/projects/<string:project_id>/delete', methods=['GET', 'DELETE'])
 @validate_project
@@ -297,6 +283,7 @@ def delete_existing_project(project_id):
     if delete_project(project_id) == 0:
         return {'message': 'Success!'}, 200
     return {'message': 'Error deleting project.'}, 400
+
 
 @app.route('/projects/<string:project_id>/update', methods=['GET', 'PUT'])
 @validate_project

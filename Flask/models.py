@@ -1,6 +1,6 @@
 import os
 import io
-import datetime
+from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
@@ -287,17 +287,19 @@ class Observation:
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
-        self.datetime = date_time  # set by calling function upon creation
+        self.datetime = date_time  # stored as datetime object
         self.responses = []  # contains response objects
 
     @staticmethod
+    # from Firestore dict
     def from_dict(source: dict) -> "Observation":
         observation = Observation(source[u'project_id'], source[u'author_id'],
                                   source[u'first_name'], source[u'last_name'],
                                   source[u'title'])
 
         if u'datetime' in source:
-            observation.datetime = source[u'datetime']
+            # datetime in dict is stored as DatetimeWithNanoseconds
+            observation.datetime = str(source[u'datetime'])
 
         if u'responses' in source:
             for response_dict in source[u'responses']:
@@ -306,6 +308,7 @@ class Observation:
 
         return observation
 
+    # to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'project_id': self.project_id,
@@ -313,10 +316,23 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
-            u'datetime': self.datetime,
+            u'datetime': datetime.fromisoformat(self.datetime),
             u'responses': [response.to_dict() for response in self.responses]
         }
 
+        return dest
+
+    # formats without nested objects
+    def format(self):
+        dest = {
+            u'project_id': self.project_id,
+            u'author_id': self.author_id,
+            u'first_name': self.first_name,
+            u'last_name': self.last_name,
+            u'title': self.title,
+            u'datetime': str(self.datetime),
+            u'responses': [response.format() for response in self.responses]
+        }
         return dest
 
     def add_response(self, response: "Response"):
@@ -346,8 +362,10 @@ class Response:
 
     @staticmethod
     def from_dict(source: dict) -> "Response":
-        response = Response(source[u'question_num'], source[u'type'],
-                            source[u'response'])
+        resp = source[u'response']
+        if source[u'type'] == DATETIME:
+            resp = str(resp)
+        response = Response(source[u'question_num'], source[u'type'], resp)
 
         return response
 
@@ -357,7 +375,20 @@ class Response:
             u'type': self.type,
             u'response': self.response
         }
+        if self.type == DATETIME:
+            dest[u'response'] = datetime.fromisoformat(self.response)
 
+        return dest
+
+    # removes any nested objects
+    def format(self):
+        dest = {
+            u'question_num': self.question_num,
+            u'type': self.type,
+            u'response': self.response
+        }
+        if self.type == DATETIME:
+            dest[u'response'] = str(self.response)
         return dest
 
     def edit_response(self, response):
@@ -772,5 +803,11 @@ def add_example_data():
 
 
 if __name__ == "__main__":
+    # project_id = "0XGU56ib2M8nQ51EDLB0"
+    # obs_list = get_all_project_observations(project_id)
+    # for obs in obs_list:
+    #     print(obs)
+    #     for res in obs.responses:
+    #         print(res)
     pass
 
