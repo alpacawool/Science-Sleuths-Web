@@ -18,8 +18,8 @@ const Projects = () => {
       <br></br>
       {isError && <p>Something went wrong...</p>}
       {isLoading && <p>Loading...</p>}
-      {data === {} && <p>You don't have any projects.</p>}
-      {data !== {} && data && <ProjectTable projects={data} />}
+      {data && data.length == 0 && <p>You don't have any projects yet.</p>}
+      {data && <ProjectTable projects={data} />}
     </div>
   );
 };

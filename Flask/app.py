@@ -168,7 +168,7 @@ def get_projects(user_id):
     owned_projects = get_all_project_details(user_id)
     if owned_projects:
         return json.dumps(owned_projects, default=vars)
-    return {}
+    return json.dumps([])
 
 
 @app.route('/projects/<string:project_id>', methods=['GET', 'POST'])
@@ -182,7 +182,7 @@ def get_single_project(project_id):
     single_project = get_project(project_id)
     if single_project:
         return json.dumps(single_project, default=vars)
-    return {}
+    return json.dumps([])
 
 
 @app.route('/projects/<string:project_id>/observations', methods=['GET', 'POST'])
