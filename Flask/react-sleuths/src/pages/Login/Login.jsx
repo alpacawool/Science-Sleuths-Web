@@ -31,7 +31,6 @@ const Login = () => {
       .then((idToken) => {
         return fetch(`/sessionLogin`, createFetchRequest(idToken));
       })
-      .then((response) => response.json())
       .then(() => {
         return signOut(auth);
       })

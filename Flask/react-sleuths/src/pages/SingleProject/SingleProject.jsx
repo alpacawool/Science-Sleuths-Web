@@ -5,44 +5,20 @@
  * Makes asynchronous calls to retrieve project summary and observations
  */
 
-import { useEffect, useState, useRef } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
 import { DetailTab } from "../../components/DetailTab/DetailTab";
 
 import "./SingleProject.scss";
+import { useFetchHook } from "../../utilities/js/fetchPostHelper";
 
 const SingleProject = () => {
   const { project_id } = useParams();
-  const [project, setProject] = useState({});
-  const [observations, setObservations] = useState({});
-  const [message, setMessage] = useState("");
-  const location = useLocation();
-  let user_id = location.state.user_id;
-  let count = useRef(0);
 
-  useEffect(() => {
-    count.current += 1;
-  });
-
-  useEffect(() => {
-    if (user_id && count.current < 2) {
-      fetch(`/projects/${project_id}`, { method: "POST" })
-        .then((response) => response.json())
-        .then((data) => setProject(data))
-        .then(() =>
-          fetch(`/projects/${project_id}/observations`, { method: "POST" })
-        )
-        .then((response) => response.json())
-        .then((data) => setObservations(data))
-        .catch((err) => {
-          setMessage("Unauthorized.");
-          console.log(err);
-        });
-    }
-  }, [user_id, project_id]);
+  const [{ projData, projIsLoading, projIsError }] = useFetchHook(`/projects/${project_id}`, { method: "POST" }, "projIsLoading", "projIsError", "projData");
+  const [{ obsData, obsIsLoading, obsIsError }] = useFetchHook(`/projects/${project_id}/observations`, { method: "POST" }, "obsIsLoading", "obsIsError", "obsData");
 
   const onClickDownload = () => {
     if (user_id) {
@@ -75,11 +51,13 @@ const SingleProject = () => {
 
   return (
     <div>
-      <p>{message}</p>
-      {project !== {} ? (
+      {projIsError && <p>Error loading project...</p>}
+      {obsIsError && <p>Error loading observations...</p>}
+      {projIsLoading && <p>Loading project...</p>}
+      {projData ? (
         <Grid container spacing="1rem" className="single-project-container">
           <Grid item xs={12} sm={6}>
-            <h1>{project.title}</h1>
+            <h1>{projData.title}</h1>
           </Grid>
 
           <Grid item xs={12} sm={6}>
@@ -94,7 +72,7 @@ const SingleProject = () => {
 
           <Grid item xs={12} sm={6} className="description-container">
             <span className="description-paragraph-title">Description</span>
-            <p className="description-paragraph">{project.description}</p>
+            <p className="description-paragraph">{projData.description}</p>
           </Grid>
 
           <Grid item xs={12} sm={6}>
@@ -115,22 +93,18 @@ const SingleProject = () => {
             </button>
           </Grid>
           <Grid item xs={12}>
-            {/* If there are observations for the current project,
-            render the table and summary tabs. */}
-            {observations.length > 0 ? (
+            {obsIsLoading && <p>Loading observations...</p>}
+            {(obsData && obsData.length > 0) ? (
               <DetailTab
-                questions={project.questions}
-                observations={observations}
+                questions={projData.questions}
+                observations={obsData}
               />
             ) : (
               <p>There are no observations yet.</p>
             )}
           </Grid>
         </Grid>
-      ) : (
-        // Project hasn't been defined yet, do not render data
-        <p></p>
-      )}
+      ) : (<></>)}
     </div>
   );
 };

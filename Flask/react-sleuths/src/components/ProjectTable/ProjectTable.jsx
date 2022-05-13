@@ -2,7 +2,7 @@
     Project Table for Projects Page
 */
 
-import React, {useState} from 'react'
+import React from 'react'
 import { useNavigate, useLocation } from "react-router-dom";
 
 import Table from "@mui/material/Table";
@@ -16,12 +16,8 @@ import Paper from "@mui/material/Paper";
 import './ProjectTable.scss'
 
 export const ProjectTable = (props) => {
-  const [message, setMessage] = useState("");
   const location = useLocation();
-  const user_id = location.state.user_id;
-  const display_name = location.state.display_name;
-
-  let navigate = useNavigate();
+  const navigate = useNavigate();
   
   function rowClickHandler(project_id) {
     navigate(`/dash/projects/${project_id}`, {replace: true, state: location.state});
