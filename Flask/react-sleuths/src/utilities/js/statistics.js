@@ -5,7 +5,7 @@ export const getTrueFalseData = (observationsList, questionIndex) => {
     var falseCount = 0;
 
     for (var i=0 ; i < observationsList.length; i++ ) {
-        if (observationsList[i].responses[questionIndex].response === "True") {
+        if (observationsList[i].responses[questionIndex].response === true) {
             trueCount++;
         } else {
             falseCount++;

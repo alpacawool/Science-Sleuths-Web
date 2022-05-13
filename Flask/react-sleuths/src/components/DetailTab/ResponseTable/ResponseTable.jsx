@@ -153,7 +153,7 @@ export const ResponseTable = (props) => {
                     {cell.type !== 3 && cell.type !== 5 ?
                     // All other cells
                     <span className='truncate-text'>
-                      {cell.response}
+                      {String(cell.response)}
                     </span>
                     : 
                       null
