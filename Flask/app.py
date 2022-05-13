@@ -258,11 +258,15 @@ def create_new_project(user_id):
             range_max = question['range_max']
 
             if question['type'] == 1:
-                range_min = int(range_min)
-                range_max = int(range_max)
+                if range_min:
+                    range_min = int(range_min)
+                if range_max:
+                    range_max = int(range_max)
             if question['type'] == 2:
-                range_min = float(range_min)
-                range_max = float(range_max)
+                if range_min:
+                    range_min = float(range_min)
+                if range_max:
+                    range_max = float(range_max)
 
             new_question = Question(
                 question['question_num'],
