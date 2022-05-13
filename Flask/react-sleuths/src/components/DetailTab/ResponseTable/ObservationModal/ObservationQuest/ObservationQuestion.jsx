@@ -37,7 +37,7 @@ export const ObservationQuestion = (props) => {
           {props.question.type !== 3 
           && props.question.type !== 5 &&
           <span className="observation-response-text">
-            {props.response.response}
+            {String(props.response.response)}
           </span>
           }
         </div>
