@@ -19,6 +19,11 @@ export const MultipleChoice = (props) => {
                   onChange={props.updateMultipleChoice(0)} 
                   fullWidth 
                   variant="outlined"
+                  error={!!props.error_message.choice0}
+                  helperText= {
+                    props.error_message.choice0
+                  }
+                  required
             />
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -28,6 +33,11 @@ export const MultipleChoice = (props) => {
                   onChange={props.updateMultipleChoice(1)}  
                   fullWidth 
                   variant="outlined"
+                  error={!!props.error_message.choice1}
+                  helperText= {
+                    props.error_message.choice1
+                  }
+                  required
             />
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -37,6 +47,11 @@ export const MultipleChoice = (props) => {
                   onChange={props.updateMultipleChoice(2)}  
                   fullWidth 
                   variant="outlined"
+                  error={!!props.error_message.choice2}
+                  helperText= {
+                    props.error_message.choice2
+                  }
+                  required
             />
       </Grid>
       <Grid item xs={12} sm={6}>
@@ -46,6 +61,11 @@ export const MultipleChoice = (props) => {
                   onChange={props.updateMultipleChoice(3)}  
                   fullWidth 
                   variant="outlined"
+                  error={!!props.error_message.choice3}
+                  helperText= {
+                    props.error_message.choice3
+                  }
+                  required
             />
       </Grid>
     </Grid>

@@ -10,6 +10,11 @@ import { DeleteQuestionButton } from '../DeleteQuestionButton/DeleteQuestionButt
 import { RangeInput } from './RangeInput/RangeInput';
 import { MultipleChoice } from './MultipleChoice/MultipleChoice';
 
+import { 
+  projectFormValidator,
+  multipleChoiceFormValidator
+} from './../../../utilities/js/inputValid.js'
+
 import './QuestionBox.scss'
 
 
@@ -19,23 +24,47 @@ export const QuestionBox = (props) => {
     prompt: "",
     question_num: props.index+1,
     type:0,
+    set_range: false,
     range_min: null,
     range_max: null,
-    choices: [] 
+    choices: [],
+    error_message: {}
   })
 
   // Update newProject state question list
   useEffect(() => {
     props.updateQuestionList(props.index, projQuestion)
+    console.log(projQuestion)
   }, [projQuestion])
 
   const handleQuestionChange = e => {
     const { name, value } = e.target;
 
-    setProjQuestion(prevProjQuestion => ({
+    // For range type
+    var opposingValue = null
+    if (name === 'range_min') {
+      opposingValue = projQuestion.range_max;
+    }
+    if (name === 'range_max') {
+      opposingValue = projQuestion.range_min;
+    }
+  
+    // Check if change of type (reset error fields)
+    if (name === 'type') {
+      setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
-        [name]: value
-    }));
+        [name]: value,
+        ['error_message']: {}
+      }));
+    } else {
+      setProjQuestion(prevProjQuestion => ({
+          ...prevProjQuestion,
+          [name]: value,
+          ['error_message']: {...prevProjQuestion.error_message,
+            [name]: projectFormValidator(name, value, opposingValue)
+          }
+      }));
+    }
 
   };
 
@@ -46,16 +75,32 @@ export const QuestionBox = (props) => {
 
     setProjQuestion(prevProjQuestion => ({
       ...prevProjQuestion,
-      [name]: newChoices
+      [name]: newChoices,
+      ['error_message']: {...prevProjQuestion.error_message,
+        [`choice${index}`]: multipleChoiceFormValidator(value, index)
+      }
     }));
   }
 
-  const disableRangeLimit = checked => {
-    if (checked === 0) {
+  const disableRangeLimit = (checked) => {
+    if (checked === false) {
       setProjQuestion(prevProjQuestion => ({
         ...prevProjQuestion,
+        ['set_range']: false,
         ['range_min']: null,
         ['range_max']: null,
+        ['error_message']: {...prevProjQuestion.error_message, 
+          ['range_min']: '',
+          ['range_max']: ''
+        }
+
+      }))
+    } else {
+      setProjQuestion(prevProjQuestion => ({
+        ...prevProjQuestion,
+        ['set_range']: true,
+        ['range_min']: '',
+        ['range_max']: '',
       }))
     }
   }
@@ -90,6 +135,11 @@ export const QuestionBox = (props) => {
                   fullWidth 
                   variant="outlined"
                   multiline={true}
+                  error={!!projQuestion.error_message.prompt}
+                  helperText= {
+                    projQuestion.error_message.prompt
+                  }
+                  required
               />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -128,12 +178,14 @@ export const QuestionBox = (props) => {
        <RangeInput
         handleQuestionChange={handleQuestionChange}
         disableRangeLimit={disableRangeLimit}
+        error_message = {projQuestion.error_message}
        /> 
        : null}
        {/* Numeric Type - Multiple Choice */}
        { questionType === 3 ? 
        <MultipleChoice 
         updateMultipleChoice={updateMultipleChoice}
+        error_message = {projQuestion.error_message}
         /> 
        : null}
     </div>

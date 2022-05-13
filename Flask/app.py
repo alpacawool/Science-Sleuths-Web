@@ -1,9 +1,7 @@
 import json
 from functools import wraps
-from turtle import setundobuffer
-from wsgiref import validate
-
-
+from tkinter import E
+import io
 from firebase_admin import auth, exceptions
 from dotenv import load_dotenv
 from flask import Flask, send_from_directory, request, jsonify, abort
@@ -214,6 +212,28 @@ def get_project_observations(project_id):
         observations_list.append(obs_data)
     return json.dumps(observations_list)
 
+  
+@app.route('/projects/<string:project_id>/download', methods=['GET', 'POST'])
+def download_csv_file(project_id):
+    '''
+    Returns .csv file of a single project
+    param project_id: ID of project
+    Credits to vectorfrog @ https://stackoverflow.com/questions/26997679/
+    '''
+    session_cookie = request.cookies.get('session')
+    if not session_cookie:
+        return {'message': 'No session cookie provided'}, 400
+    try:
+        file_content = io.StringIO()
+        file_content = write_project_to_file(project_id)
+        csv_response = make_response(file_content.getvalue())
+        csv_response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+        csv_response.headers["Content-type"] = "text/csv"
+        return csv_response
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
+
 
 @app.route('/users/<string:user_id>/projects/create', methods=['GET', 'POST'])
 @validate_user
@@ -241,9 +261,35 @@ def create_new_project(user_id):
             question['range_max']
         )
         new_project.add_question(new_question)
+        
+        for question in content['questions']:
 
-    new_project_id = create_project(new_project)
-    return {"project_id" : new_project_id}
+            # Addressing range being submitted as string
+            range_min = question['range_min']
+            range_max = question['range_max']
+
+            if question['type'] == 1:
+                range_min = int(range_min)
+                range_max = int(range_max)
+            if question['type'] == 2:
+                range_min = float(range_min)
+                range_max = float(range_max)
+
+            new_question = Question(
+                question['question_num'],
+                question['prompt'],
+                question['type'],
+                question['choices'],
+                range_min,
+                range_max,
+            )
+            new_project.add_question(new_question)
+
+        new_project_id = create_project(new_project)
+        return {"project_id" : new_project_id}
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
 
 @app.route('/projects/<string:project_id>/delete', methods=['GET', 'DELETE'])
 @validate_project
