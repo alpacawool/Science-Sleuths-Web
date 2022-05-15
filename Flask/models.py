@@ -34,7 +34,7 @@ class InvalidResponseTypeError(Exception):
     pass
 
 
-class InvalidDatetimeFormatError(Exception):
+class InvalidDatetimeFormatError(ValueError):
     pass
 
 
@@ -304,11 +304,10 @@ class Observation:
         elif isinstance(date_time, str):
             try:
                 self.datetime = datetime.fromisoformat(date_time)
-            except InvalidDatetimeFormatError:
-                print("Invalid ISO format. Datetime must be entered as ISO formatted string or as a datetime object.")
+            except ValueError:
+                raise InvalidDatetimeFormatError("String is not a valid ISO format.")
         else:
-            print("Datetime must be entered as ISO formatted string or as a datetime object.")
-            raise InvalidDatetimeFormatError
+            raise InvalidDatetimeFormatError("Datetime response must be stored as a Datetime object or valid ISO format.")
 
     @staticmethod
     # convert from Firestore dict to Python object
@@ -381,11 +380,10 @@ class Response:
         elif self.type == DATETIME and isinstance(response, str):
             try:
                 self.response = datetime.fromisoformat(response)
-            except InvalidDatetimeFormatError:
-                print("Invalid ISO format. Datetime must be entered as ISO formatted string or as a datetime object.")
+            except ValueError:
+                raise InvalidDatetimeFormatError("String is not a valid ISO format.")
         elif self.type == DATETIME:
-            print("Datetime must be entered as ISO formatted string or as a datetime object.")
-            raise InvalidDatetimeFormatError
+            raise InvalidDatetimeFormatError("Datetime response must be stored as a Datetime object or valid ISO format.")
         else:
             self.response = response
 
@@ -746,24 +744,14 @@ def write_project_to_file(project_id: str):
 
 
 if __name__ == "__main__":
-    project_id = "0XGU56ib2M8nQ51EDLB0"
-    obs_list = get_all_project_observations(project_id)
-    for obs in obs_list:
-        print(obs)
-        # e.g. <__main__.Observation object at 0x000001B7A3212170>
-        print(obs.to_dict())
-        # e.g dictionary but with Datetime stored as Datetime
-        print(obs.format())
-        # e.g. dictionary with Datetime stored as string
-    dto = datetime.now()
-    print(dto)
-    response = Response(1, DATETIME, dto)
-    response2 = Response(1, DATETIME, str(dto))
-    print(response)
-    print(response2)
-    print(response.to_dict())
-    print(response2.to_dict())
-    print(response.format())
-    print(response2.format())
-
+    # project_id = "0XGU56ib2M8nQ51EDLB0"
+    # obs_list = get_all_project_observations(project_id)
+    # for obs in obs_list:
+    #     print(obs)
+    #     # e.g. <__main__.Observation object at 0x000001B7A3212170>
+    #     print(obs.to_dict())
+    #     # e.g dictionary but with Datetime stored as Datetime
+    #     print(obs.format())
+    #     # e.g. dictionary with Datetime stored as string
+    pass
 
