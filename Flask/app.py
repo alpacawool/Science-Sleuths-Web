@@ -251,7 +251,7 @@ def delete_existing_project(project_id):
     return {'message': 'Error deleting project.'}, 400
 
 
-@app.route('/projects/<string:project_id>/update', methods=['GET', 'PUT'])
+@app.route('/projects/<string:project_id>/update', methods=['GET', 'POST'])
 @validate_project
 def update_project(project_id):
     pass

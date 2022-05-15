@@ -724,7 +724,7 @@ def write_project_to_file(project_id: str):
         .collection(u'Observations').stream()
 
     title = [{"project_id": project_id}]
-    header = ['author_id', 'first_name', 'last_name', 'title', 'datetime',
+    header = ['author_id', 'first_name', 'last_name', 'title', 'datetime', 'image_url',
               'question_num', 'type', 'response']
     
     file_content = io.StringIO()
@@ -741,6 +741,8 @@ def write_project_to_file(project_id: str):
             data.append(obs_dict['last_name'])
             data.append(obs_dict['title'])
             data.append(obs_dict['datetime'])
+            if obs_dict.get('image_url'):
+                data.append(obs_dict['image_url'])
             data.append(response['question_num'])
             data.append(response['type'])
             data.append(response['response'])
@@ -750,9 +752,9 @@ def write_project_to_file(project_id: str):
 
 
 if __name__ == "__main__":
-    project_id = "0XGU56ib2M8nQ51EDLB0"
-    obs_list = get_all_project_observations(project_id)
-    for obs in obs_list:
-        print(obs)
+    # project_id = "0XGU56ib2M8nQ51EDLB0"
+    # obs_list = get_all_project_observations(project_id)
+    # for obs in obs_list:
+    #     print(obs)
     pass
 
