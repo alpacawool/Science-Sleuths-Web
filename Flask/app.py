@@ -143,20 +143,11 @@ def create_user():
     if len(missing_params) > 0:
         message = ', '.join(missing_params) + " required."
         return {'message': message}, 400
-    try:
-        # create user in Firestore
-        db = firestore.client()
-        teacher_ref = db.collection(u'Users').document(data['user_id'])
-        teacher_ref.set({
-            u'first_name': data['first_name'],
-            u'last_name': data['last_name'],
-            u'email': data['email'],
-            u'owned_projects': []
-        })
+    res = create_teacher(Teacher(data['first_name'], data['last_name'], data['email']), data['user_id'])
+    if res == 0:
         return {'message': 'Success!'}, 200
-    except exceptions.FirebaseError as e:
-        print(e)
-        return {'message': e}, 400
+    else:
+        return {'message': "Error creating user."}, 400
 
 
 @app.route('/users/<string:user_id>/projects', methods=['GET', 'POST'])

@@ -2,7 +2,7 @@ import os
 import io
 from datetime import datetime
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, exceptions
 from dotenv import load_dotenv
 from typing import List
 import csv
@@ -84,13 +84,11 @@ class Teacher(User):
     A class representing a user (teacher) document in the top-level collection
     Users.
     """
-    def __init__(self, first_name: str, last_name: str, email: str,
-                 hashed_pwd: str, is_admin: bool = True,
+    def __init__(self, first_name: str, last_name: str, email: str, is_admin: bool = True,
                  owned_projects: List = None):
         super().__init__(first_name, last_name)
-        self.email = email
         self.is_admin = is_admin
-        self.hashed_pwd = hashed_pwd
+        self.email = email
         if owned_projects is None:
             self.owned_projects = []
         else:
@@ -99,7 +97,7 @@ class Teacher(User):
     @staticmethod
     def from_dict(source: dict) -> "Teacher":
         user = Teacher(source[u'first_name'], source[u'last_name'],
-                       source[u'email'], source[u'hashed_pwd'])
+                       source[u'email'])
 
         if u'is_admin' in source:
             user.is_admin = source[u'is_admin']
@@ -117,7 +115,6 @@ class Teacher(User):
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'email': self.email,
-            u'hashed_pwd': self.hashed_pwd,
             u'is_admin': self.is_admin,
             u'owned_projects': [project_summary.to_dict() for project_summary
                                 in self.owned_projects]
@@ -316,7 +313,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
-            u'datetime': self.datetime,
+            u'datetime': datetime.fromisoformat(self.datetime),
             u'responses': [response.to_dict() for response in self.responses]
         }
 
@@ -376,7 +373,7 @@ class Response:
             u'response': self.response
         }
         if self.type == DATETIME:
-            dest[u'response'] = self.response
+            dest[u'response'] = datetime.fromisoformat(self.response)
 
         return dest
 
@@ -410,16 +407,29 @@ def create_student(student: "Student") -> str:
     return student_ref[1].id
 
 
-def create_teacher(teacher: "Teacher") -> str:
+def create_teacher(teacher: "Teacher", user_id: str = None) -> str:
     """
-    Takes a Teacher instance and adds it to Firestore db
+    Takes a Teacher instance and optionally the user_id to create the teacher under and adds
+    it to the Firestore db. If no user_id is specified, one will be automatically generated.
     :param teacher: the Teacher instance
-    :return: the user_id
+    :param user_id: the optional user_id to add the teacher document to
+    :return: 0 if successful, 1 if error
     """
-    db = firestore.client()
-    teacher_ref = db.collection(u'Users').add(teacher.to_dict())
-
-    return teacher_ref[1].id
+    try:
+        db = firestore.client()
+        if user_id:
+            teacher_ref = db.collection(u'Users').document(user_id)
+            teacher_ref.set(teacher.to_dict())
+            return user_id
+        else:
+            teacher_ref = db.collection(u'Users').add(teacher.to_dict())
+            return teacher_ref[1].id
+    except exceptions.FirebaseError as e:
+        print(e)
+        return 1
+    except Exception as e:
+        print(e)
+        return 2
 
 
 def get_user(user_id: str) -> dict:
@@ -807,7 +817,9 @@ if __name__ == "__main__":
     # obs_list = get_all_project_observations(project_id)
     # for obs in obs_list:
     #     print(obs)
-    #     for res in obs.responses:
-    #         print(res)
+    #     # e.g. <__main__.Observation object at 0x000001B7A3212170>
+    #     print(obs.to_dict())
+    #     # e.g dictionary but with Datetime stored as Datetime
+    #     print(obs.format())
+    #     # e.g. dictionary with Datetime stored as string
     pass
-
