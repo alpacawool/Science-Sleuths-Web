@@ -290,16 +290,17 @@ class Observation:
     Observations.
     """
     def __init__(self, project_id: str, author_id: str, first_name: str,
-                 last_name: str, title: str, date_time=None):
+                 last_name: str, title: str, date_time: date = None, image_url: str = None):
         self.project_id = project_id
         self.author_id = author_id
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
+        self.image_url = image_url
         self.responses = []  # contains response objects
 
         # store datetime as a datetime object
-        if isinstance(date_time, date):
+        if not date_time or isinstance(date_time, date):
             self.datetime = date_time
         elif isinstance(date_time, str):
             try:
@@ -316,10 +317,13 @@ class Observation:
                                   source[u'first_name'], source[u'last_name'],
                                   source[u'title'], source[u'datetime'])
 
+        if u'image_url' in source:
+            observation.set_image_url(source[u'image_url'])
+
         if u'responses' in source:
             for response_dict in source[u'responses']:
                 response = Response.from_dict(response_dict)
-                observation.responses.append(response)
+                observation.add_response(response)
 
         return observation
 
@@ -331,6 +335,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
+            u'image_url': self.image_url,
             u'datetime': self.datetime,
             u'responses': [response.to_dict() for response in self.responses]
         }
@@ -345,15 +350,13 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
+            u'image_url': self.image_url,
             u'datetime': str(self.datetime),
             u'responses': [response.format() for response in self.responses]
         }
         return dest
 
     def add_response(self, response: "Response"):
-        """
-        Adds a Response object to the responses.
-        """
         self.responses.append(response)
 
     def remove_response(self, question_num: int):
@@ -363,6 +366,9 @@ class Observation:
 
     def set_datetime(self, date_time):
         self.datetime = date_time
+
+    def set_image_url(self, image_url: str):
+        self.image_url = image_url
 
 
 class Response:
@@ -744,14 +750,9 @@ def write_project_to_file(project_id: str):
 
 
 if __name__ == "__main__":
-    # project_id = "0XGU56ib2M8nQ51EDLB0"
-    # obs_list = get_all_project_observations(project_id)
-    # for obs in obs_list:
-    #     print(obs)
-    #     # e.g. <__main__.Observation object at 0x000001B7A3212170>
-    #     print(obs.to_dict())
-    #     # e.g dictionary but with Datetime stored as Datetime
-    #     print(obs.format())
-    #     # e.g. dictionary with Datetime stored as string
+    project_id = "0XGU56ib2M8nQ51EDLB0"
+    obs_list = get_all_project_observations(project_id)
+    for obs in obs_list:
+        print(obs)
     pass
 

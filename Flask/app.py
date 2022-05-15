@@ -185,10 +185,11 @@ def get_project_observations(project_id):
     :param project_id: ID of project
     """
     observations = get_all_project_observations(project_id)
+    print(observations)
     return json.dumps(observations)
 
   
-@app.route('/projects/<string:project_id>/download', methods=['GET', 'POST'])
+@app.route('/projects/<string:project_id>/download', methods=['GET'])
 @validate_project
 def download_csv_file(project_id):
     '''

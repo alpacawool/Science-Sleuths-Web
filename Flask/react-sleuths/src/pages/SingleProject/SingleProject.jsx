@@ -33,24 +33,34 @@ const SingleProject = (props) => {
 
   const onClickDownload = () => {
     if (user_id) {
-      fetch(`/projects/${project_id}/download`, { method: "POST" })
+      fetch(`/projects/${project_id}/download`, { method: "GET" })
         .then((response) => {
-          let data = response.body.getReader()
-          data.read().then(({ done, value}) => {
-            saveCSV(new TextDecoder("utf-8").decode(value), `${project_id}.csv`)
-          })
+          if (response.status === 200) {
+            let data = response.body.getReader()
+            data.read().then(({ done, value}) => {
+              saveCSV(new TextDecoder("utf-8").decode(value), `${project_id}.csv`)
+            })
+          } else {
+            throw new Error("Error downloading data.");
+          }
         }
-      )
+      ).catch((err) => {
+        console.log(err);
+      });
     }
   }
 
   const deleteProject = () => {
     fetch(`/projects/${project_id}/delete`, { method: "DELETE" })
       .then((response) => {
-        if (response.status == 200) {
-          navigate(`/dash/projects/`, {replace: true, state: location.state });
+        if (response.status === 200) {
+          navigate(`/dash/projects/`, { replace: true, state: location.state });
+        } else {
+          throw new Error("Error deleting project.");
         }
-      })
+      }).catch((err) => {
+        console.log(err);
+      });
   }
 
   const saveCSV = (data, fileName) => {

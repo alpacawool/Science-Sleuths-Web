@@ -25,6 +25,7 @@ export const ResponseTable = (props) => {
     last_name: '',
     date: '',
     title: '',
+    image_url: '',
     responses: [],
   });
 
@@ -34,6 +35,7 @@ export const ResponseTable = (props) => {
     lastName,
     date,
     title,
+    imageUrl,
     responses
   ) => {
     // Set current observation
@@ -43,6 +45,7 @@ export const ResponseTable = (props) => {
       ['last_name']: lastName,
       ['date']: date,
       ['title']: title,
+      image_url: imageUrl,
       ['responses']: responses,
     }));
     setOpen(true);
@@ -82,6 +85,7 @@ export const ResponseTable = (props) => {
               <TableCell align="left">Name</TableCell>
               <TableCell align="left">Date and Time</TableCell>
               <TableCell align="left">Title</TableCell>
+              <TableCell align="left">Image Thumbnail</TableCell>
               {props.questions.map((cell, index) =>
               <TableCell key={index}>
                 <span className="truncate-text">
@@ -102,6 +106,7 @@ export const ResponseTable = (props) => {
                     row.last_name,
                     formatDate(row.datetime),
                     row.title,
+                    row.image_url,
                     row.responses
                   )}>
                 <TableCell
@@ -121,12 +126,18 @@ export const ResponseTable = (props) => {
                     {formatDate(row.datetime)}
                   </div>
                 </TableCell>
-         
                 <TableCell>
                   <div className="title-col">
                     <span className='truncate-text'>
                     {row.title}
                     </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="image-col">
+                    {row.image_url &&
+                      <img src={row.image_url} alt="Observation Image" height="100" width="100" />
+                    }
                   </div>
                 </TableCell>
                   {/* Log individual responses */}
