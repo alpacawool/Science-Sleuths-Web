@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useLocation} from "react-router-dom";
+import { useParams, useLocation, useNavigate, Navigate} from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -18,6 +18,7 @@ import { useFetchHook } from "../../utilities/js/fetchPostHelper";
 const SingleProject = (props) => {
   const { project_id } = useParams();
   const location = useLocation();
+  let navigate = useNavigate();
   let user_id = location.state.user_id;
 
   const [{ projData, projIsLoading, projIsError }] = useFetchHook(`/projects/${project_id}`, { method: "POST" }, "projIsLoading", "projIsError", "projData");
@@ -41,6 +42,15 @@ const SingleProject = (props) => {
         }
       )
     }
+  }
+
+  const deleteProject = () => {
+    fetch(`/projects/${project_id}/delete`, { method: "DELETE" })
+      .then((response) => {
+        if (response.status == 200) {
+          navigate(`/dash/projects/`, {replace: true, state: location.state });
+        }
+      })
   }
 
   const saveCSV = (data, fileName) => {
@@ -68,6 +78,12 @@ const SingleProject = (props) => {
         <Grid container spacing="1rem" className="single-project-container">
           <Grid item xs={12} sm={6}>
             <h1>{projData.title}</h1>
+            <button 
+              className="delete-project-button"
+              onClick={deleteProject}
+            >
+            Delete Project
+            </button>
           </Grid>
 
           <Grid item xs={12} sm={6}>

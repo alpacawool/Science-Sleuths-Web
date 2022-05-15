@@ -236,7 +236,7 @@ def create_new_project(user_id):
             new_project.add_question(new_question)
 
         new_project_id = create_project(new_project)
-        return {"project_id" : new_project_id}
+        return {"project_id" : new_project_id}, 200
     except Exception as e:
         print(e)
         return {'message': 'Error creating new project.'}, 400
