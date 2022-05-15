@@ -316,7 +316,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
-            u'datetime': datetime.fromisoformat(self.datetime),
+            u'datetime': self.datetime,
             u'responses': [response.to_dict() for response in self.responses]
         }
 
@@ -376,7 +376,7 @@ class Response:
             u'response': self.response
         }
         if self.type == DATETIME:
-            dest[u'response'] = datetime.fromisoformat(self.response)
+            dest[u'response'] = self.response
 
         return dest
 
@@ -612,7 +612,7 @@ def create_observation(project_id: str, observation: "Observation") -> str:
     """
     db = firestore.client()
     # set the observation datetime to current datetime
-    observation.set_datetime(datetime.datetime.now())
+    observation.set_datetime(datetime.now())
     obs_ref = db.collection(u'Projects').document(project_id) \
         .collection(u'Observations').add(observation.to_dict())
 

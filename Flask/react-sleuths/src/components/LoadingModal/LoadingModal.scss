@@ -1,0 +1,47 @@
+@use './../../utilities/css/colors';
+
+.loading-modal {
+    /* Place on top of dashboard */
+    z-index:5000;
+    height:100%;
+    width:100%;
+    display:flex;
+    position:relative;
+    z-index:1501 !important;
+    align-items:center;
+
+    .loading-modal-div {
+        background-color:colors.$primary-color-dark;
+        width:fit-content;
+        align-items:center;
+        margin:auto;
+        padding:5rem;
+
+        .circular-progress-icon {
+            display:flex;
+            margin: auto;
+        }
+
+        .MuiCircularProgress-colorPrimary {
+            color:colors.$white;
+        }
+
+        .loading-message {
+            color:colors.$primary-color-text;
+            font-weight:400;
+        }
+    }
+}
+
+
+/* Smartphone */
+@media screen and (max-width: 450px) {
+
+    .loading-modal {
+        height:50%;
+
+        .loading-modal-div {
+        }
+    }
+}
+

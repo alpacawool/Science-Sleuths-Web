@@ -1,11 +1,12 @@
 from functools import wraps
+import io
 from datetime import timedelta
-from tkinter import E
 from firebase_admin import auth, exceptions
 from flask import Flask, send_from_directory, request, jsonify, abort, make_response
 from flask_cors import CORS, cross_origin
 
 from models import *
+from sample_data import *
 
 
 load_dotenv()
@@ -257,11 +258,15 @@ def create_new_project(user_id):
             range_max = question['range_max']
 
             if question['type'] == 1:
-                range_min = int(range_min)
-                range_max = int(range_max)
+                if range_min:
+                    range_min = int(range_min)
+                if range_max:
+                    range_max = int(range_max)
             if question['type'] == 2:
-                range_min = float(range_min)
-                range_max = float(range_max)
+                if range_min:
+                    range_min = float(range_min)
+                if range_max:
+                    range_max = float(range_max)
 
             new_question = Question(
                 question['question_num'],
@@ -289,6 +294,25 @@ def delete_existing_project(project_id):
 @validate_project
 def update_project(project_id):
     pass
+
+@app.route('/create-sample-project', methods=['GET','POST'])
+def create_sample_project():
+    '''
+    Adds a sample project to the firestore database
+    Returns the project id
+    '''
+    session_cookie = request.cookies.get('session')
+    if not session_cookie:
+        return {'message': 'No session cookie provided'}, 400
+    try:
+        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
+        user_id = decoded_claims.get("uid")
+        new_project_id = generate_random_project(user_id)
+        return {"project_id" : new_project_id}
+    except auth.InvalidSessionCookieError as e:
+        print(e)
+        return {'message': 'Invalid session cookie.'}, 400
+
 
 
 @app.route('/')

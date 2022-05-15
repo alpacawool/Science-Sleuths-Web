@@ -35,6 +35,7 @@ export const DetailTab = (props) => {
               <ResponseTable
                 questions={props.questions}
                 observations={props.observations}
+                {...props}
               />
             </TabPanel>
 

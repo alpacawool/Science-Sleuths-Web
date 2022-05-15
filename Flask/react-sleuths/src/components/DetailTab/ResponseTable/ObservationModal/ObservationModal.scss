@@ -1,0 +1,110 @@
+@use './../../../../utilities/css/colors';
+@use './../../../../utilities/css/sizes';
+
+.observation-modal {
+    background-color:colors.$white;
+    margin-left:sizes.$drawer-width;
+    z-index:-500;
+
+    h1 {
+        margin-top:1.5rem;
+        margin-bottom:1.5rem;
+    }
+
+    /* Force scrollbar to appear
+    * Credits to @Codemaker from 
+    * https://stackoverflow.com/questions/35663653/ */
+    ::-webkit-scrollbar {
+        -webkit-appearance: none;
+        width: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        background-color: colors.$form-outline-unselect;
+        -webkit-box-shadow: colors.$scroll-bar;
+    }
+
+
+    .observation-modal-container {
+        width:100%;
+        height:100%;
+        overflow:auto;
+    }
+
+    .observation-modal-div {
+        background-color:colors.$white;
+        border:0px;
+        padding:2rem;
+        border-radius:0.3em;
+
+        .close-observation-button {
+            all:unset;
+            margin-bottom:1rem;
+            display:flex;
+            background-color:colors.$primary-color;
+            padding:0.5rem;
+            border-radius:0.3em;
+            color:colors.$primary-color-text;
+            justify-content: center;
+
+            .close-observation-arrow {
+                height:0.8em;
+                margin-right:0.5rem;
+            }
+
+            &:hover {
+                background-color: colors.$primary-color-darker;
+                cursor:pointer;
+            }
+        }
+
+
+        .observation-label-text {
+            font-weight:800;
+            margin-right:1rem;
+        }
+
+        li {
+            margin-bottom:0.4rem;
+        }
+
+
+    }
+
+    /* Background behind modal */
+    .MuiBackdrop-root {
+        background-color:colors.$white;
+
+    }
+}
+
+.collapsed-modal {
+    margin-left:sizes.$drawer-collapse-width;
+}
+
+/* Tablet */
+@media screen and (max-width: 768px) {
+    .observation-modal {
+        margin-left: sizes.$drawer-collapse-width;
+    }
+
+    .collapsed-modal {
+        margin-left:0rem;
+    }
+    
+}
+
+/* Smartphone */
+@media screen and (max-width: 450px) {
+    .observation-modal {
+        margin-left: 0rem;
+        padding:0rem;
+    }
+
+    .collapsed-modal {
+        margin-left:0rem;
+    }
+    
+}
+

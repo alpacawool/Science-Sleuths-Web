@@ -2,7 +2,7 @@
     Project Table for Projects Page
 */
 
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { useNavigate, useLocation } from "react-router-dom";
 
 import Table from "@mui/material/Table";
@@ -23,52 +23,54 @@ export const ProjectTable = (props) => {
     navigate(`/dash/projects/${project_id}`, {replace: true, state: location.state});
   }
 
+  
+
   return (
-    <TableContainer
-      component={Paper}
-      sx = {{
-        height: "80vh",
-        padding: "1em",
-        overflow: "scroll",
-      }}
+    <div 
+    className={`${props.openDrawer ? "" : "collapsed-projects-list-container"} 
+    projects-list-container`}
     >
-      <Table 
-        aria-label="Projects Table"
-        sx = {{
-          height: "max-content",
-          "& .MuiTableRow-root:hover": {
-            backgroundColor: "#fcf7f7",
-            cursor: "pointer"
-          }
-        }}
+      <TableContainer
+        component={Paper}
       >
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Description</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {props.projects.map((row) => (
-            <TableRow 
-              key={row.project_id} 
-              className="project-rows" 
-              onClick={()=>rowClickHandler(row.project_id)}
-            >
-              <TableCell component="th" scope="row">
-                <div className="name-col">
-                  {row.title}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="description-col">
-                  {row.description}
-                </div>
-              </TableCell>
+        <Table 
+          aria-label="Projects Table"
+          sx = {{
+            height: "max-content",
+            "& .MuiTableRow-root:hover": {
+              backgroundColor: "#fcf7f7",
+              cursor: "pointer"
+            }
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Description</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {props.projects.map((row) => (
+              <TableRow 
+                key={row.project_id} 
+                className="project-rows" 
+                onClick={()=>rowClickHandler(row.project_id)}
+              >
+                <TableCell component="th" scope="row">
+                  <div className="name-col">
+                    {row.title}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="description-col">
+                    {row.description}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </div>
   )
 }

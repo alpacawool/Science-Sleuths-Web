@@ -5,7 +5,8 @@
  * Makes asynchronous calls to retrieve project summary and observations
  */
 
-import { useParams, useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams, useLocation} from "react-router-dom";
 import { Grid } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -14,13 +15,20 @@ import { DetailTab } from "../../components/DetailTab/DetailTab";
 import "./SingleProject.scss";
 import { useFetchHook } from "../../utilities/js/fetchPostHelper";
 
-const SingleProject = () => {
+const SingleProject = (props) => {
   const { project_id } = useParams();
   const location = useLocation();
   let user_id = location.state.user_id;
 
   const [{ projData, projIsLoading, projIsError }] = useFetchHook(`/projects/${project_id}`, { method: "POST" }, "projIsLoading", "projIsError", "projData");
   const [{ obsData, obsIsLoading, obsIsError }] = useFetchHook(`/projects/${project_id}/observations`, { method: "POST" }, "obsIsLoading", "obsIsError", "obsData");
+
+  useEffect(() => {
+    if (window.innerWidth <= 450) {
+      console.log(props.openDrawer)
+      props.closeDrawer();
+    } 
+  }, [])
 
   const onClickDownload = () => {
     if (user_id) {
@@ -100,6 +108,7 @@ const SingleProject = () => {
               <DetailTab
                 questions={projData.questions}
                 observations={obsData}
+                {...props}
               />
             ) : (
               <p>There are no observations yet.</p>
