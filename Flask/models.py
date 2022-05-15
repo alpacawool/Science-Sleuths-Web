@@ -1,6 +1,6 @@
 import os
 import io
-from datetime import datetime
+from datetime import datetime, date
 import firebase_admin
 from firebase_admin import credentials, firestore, exceptions
 from dotenv import load_dotenv
@@ -31,6 +31,10 @@ class InvalidQuestionTypeError(Exception):
 
 
 class InvalidResponseTypeError(Exception):
+    pass
+
+
+class InvalidDatetimeFormatError(Exception):
     pass
 
 
@@ -217,15 +221,23 @@ class Question:
     def __init__(self, question_num, prompt: str, question_type: int,
                  choices: List = None, range_min: int = None,
                  range_max: int = None):
-        self.question_num = question_num
+        self.question_num = int(question_num)
         self.prompt = prompt
         self.type = question_type
+        self.range_min = None
+        self.range_max = None
         if choices is None:
             self.choices = []
         else:
             self.choices = choices
-        self.range_min = range_min
-        self.range_max = range_max
+        if question_type == INTEGER and range_min:
+            self.range_min = int(range_min)
+        if question_type == INTEGER and range_max:
+            self.range_max = int(range_max)
+        if question_type == FPN and range_min:
+            self.range_min = float(range_min)
+        if question_type == FPN and range_max:
+            self.range_max = float(range_max)
 
     @staticmethod
     def from_dict(source: dict) -> "Question":
@@ -284,19 +296,26 @@ class Observation:
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
-        self.datetime = date_time  # stored as datetime object
         self.responses = []  # contains response objects
 
+        # store datetime as a datetime object
+        if isinstance(date_time, date):
+            self.datetime = date_time
+        elif isinstance(date_time, str):
+            try:
+                self.datetime = datetime.fromisoformat(date_time)
+            except InvalidDatetimeFormatError:
+                print("Invalid ISO format. Datetime must be entered as ISO formatted string or as a datetime object.")
+        else:
+            print("Datetime must be entered as ISO formatted string or as a datetime object.")
+            raise InvalidDatetimeFormatError
+
     @staticmethod
-    # from Firestore dict
+    # convert from Firestore dict to Python object
     def from_dict(source: dict) -> "Observation":
         observation = Observation(source[u'project_id'], source[u'author_id'],
                                   source[u'first_name'], source[u'last_name'],
-                                  source[u'title'])
-
-        if u'datetime' in source:
-            # datetime in dict is stored as DatetimeWithNanoseconds
-            observation.datetime = str(source[u'datetime'])
+                                  source[u'title'], source[u'datetime'])
 
         if u'responses' in source:
             for response_dict in source[u'responses']:
@@ -305,7 +324,7 @@ class Observation:
 
         return observation
 
-    # to Firestore dict
+    # Python object to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'project_id': self.project_id,
@@ -313,7 +332,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
-            u'datetime': datetime.fromisoformat(self.datetime),
+            u'datetime': self.datetime,
             u'responses': [response.to_dict() for response in self.responses]
         }
 
@@ -355,25 +374,34 @@ class Response:
     def __init__(self, question_num: int, question_type: int, response):
         self.question_num = question_num
         self.type = question_type
-        self.response = response  # response is variable depending on type
+
+        # store datetime responses as datetime objects
+        if self.type == DATETIME and isinstance(response, date):
+            self.response = response
+        elif self.type == DATETIME and isinstance(response, str):
+            try:
+                self.response = datetime.fromisoformat(response)
+            except InvalidDatetimeFormatError:
+                print("Invalid ISO format. Datetime must be entered as ISO formatted string or as a datetime object.")
+        elif self.type == DATETIME:
+            print("Datetime must be entered as ISO formatted string or as a datetime object.")
+            raise InvalidDatetimeFormatError
+        else:
+            self.response = response
+
 
     @staticmethod
+    # convert from Firestore dict to Python object
     def from_dict(source: dict) -> "Response":
-        resp = source[u'response']
-        if source[u'type'] == DATETIME:
-            resp = str(resp)
-        response = Response(source[u'question_num'], source[u'type'], resp)
+        return Response(source[u'question_num'], source[u'type'], source[u'response'])
 
-        return response
-
+    # Python object to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'question_num': self.question_num,
             u'type': self.type,
             u'response': self.response
         }
-        if self.type == DATETIME:
-            dest[u'response'] = datetime.fromisoformat(self.response)
 
         return dest
 
@@ -675,7 +703,7 @@ def get_all_project_observations(project_id: str) -> List["Observation"]:
     observations = []
     for obs in obs_stream:
         # convert to Observation
-        observations.append(Observation.from_dict(obs.to_dict()))
+        observations.append(Observation.from_dict(obs.to_dict()).format())
     return observations
 
 
@@ -717,109 +745,25 @@ def write_project_to_file(project_id: str):
     return file_content
 
 
-def add_example_data():
-    """
-    Creates some example data using the classes/functions above.
-    """
-    # create & add three students
-    num_students = 3
-    student_first_names = ["Jane", "John", "Mickey"]
-    student_last_names = ["Doe", "Deere", "Mouse"]
-    student_ids = []
-    for i in range(num_students):
-        student = Student(student_first_names[i], student_last_names[i])
-        student_ids.append(create_student(student))
-
-    # create & add three teachers
-    num_teachers = 3
-    teacher_first_names = ["Marie", "Joseph", "David"]
-    teacher_last_names = ["Curie", "Heller", "Johnson"]
-    emails = ["mariecurie@test.com", "josephheller@test.com",
-              "davidjohnson@test.com"]
-    hashed_pwds = ["BLAH1234", "abcdefg", "somehash"]
-    teacher_ids = []
-
-    for i in range(num_teachers):
-        teacher = Teacher(teacher_first_names[i], teacher_last_names[i],
-                          emails[i], hashed_pwds[i])
-        teacher_ids.append(create_teacher(teacher))
-
-    # create & add three projects
-    num_projects = 3
-    titles = ["Study of B. oleracea", "Better Betta Fish", "Birdwatching Log"]
-    descriptions = ["In this three week exploration, we will be gathering...",
-                    "Color pattern observations in Siamese Fighting...",
-                    "Please submit all birds spotted HERE. IMPORTANT..."]
-
-    # with three questions per project
-    num_questions = 3
-    prompts = [["Describe weather...",
-                "Provide height start...",
-                "How many lea..."],
-               ["Describe fish pattern...",
-                "Choose the correct...",
-                "What time of day did..."],
-               ["What is your favorite...",
-                "How many birds do you...",
-                "True or false..."]]
-    types = [[TEXT, FPN, INTEGER],
-             [TEXT, MULTIPLE_CHOICE, DATETIME],
-             [TEXT, INTEGER, BOOLEAN]]
-    choices = [[None, None, None],
-               [None, ["Siamese fighting fish", "Peaceful betta",
-                       "Betta smargadina", "Spotfin betta"], None],
-               [None, None, None]]
-    project_ids = []
-
-    # create each project and add questions
-    for i in range(num_projects):
-        project = Project(teacher_ids[i], titles[i], descriptions[i])
-        for j in range(num_questions):
-            project.add_question(Question(j + 1, prompts[i][j], types[i][j],
-                                          choices[i][j]))
-        project_ids.append(create_project(project))
-
-    # create one more project for testing
-    project = Project(teacher_ids[2], "A testing testful test",
-                      "For testing to see if ArrayUnion works")
-    for i in range(num_questions):
-        project.add_question(Question(i + 1, prompts[0][i], types[0][i],
-                                      choices[0][i]))
-    project_ids.append(create_project(project))
-
-    project_responses = [[["Sunny...", 4.25, 3],
-                          ["Rainy...", 2.74, 8],
-                          ["Cloudy...", 24.2, 12]],
-                         [["Shiny...", 0, datetime.datetime.now()],
-                          ["Gray...", 2, datetime.datetime.now()],
-                          ["Blue...", 2, datetime.datetime.now()]],
-                         [["The great horned owl", 12, False],
-                          ["American Eagle", 7, True],
-                          ["Nothing", 8, True]]]
-
-    # create one observation per student per project
-    for i in range(num_projects):
-        for j in range(len(student_ids)):
-            observation = Observation(project_ids[i], student_ids[j],
-                                      student_first_names[j],
-                                      student_last_names[j],
-                                      "test title")
-            # number of questions per observation
-            for k in range(num_questions):
-                response = Response(k + 1, types[i][k],
-                                    project_responses[i][j][k])
-                observation.add_response(response)
-            create_observation(project_ids[i], observation)
-
-
 if __name__ == "__main__":
-    # project_id = "0XGU56ib2M8nQ51EDLB0"
-    # obs_list = get_all_project_observations(project_id)
-    # for obs in obs_list:
-    #     print(obs)
-    #     # e.g. <__main__.Observation object at 0x000001B7A3212170>
-    #     print(obs.to_dict())
-    #     # e.g dictionary but with Datetime stored as Datetime
-    #     print(obs.format())
-    #     # e.g. dictionary with Datetime stored as string
-    pass
+    project_id = "0XGU56ib2M8nQ51EDLB0"
+    obs_list = get_all_project_observations(project_id)
+    for obs in obs_list:
+        print(obs)
+        # e.g. <__main__.Observation object at 0x000001B7A3212170>
+        print(obs.to_dict())
+        # e.g dictionary but with Datetime stored as Datetime
+        print(obs.format())
+        # e.g. dictionary with Datetime stored as string
+    dto = datetime.now()
+    print(dto)
+    response = Response(1, DATETIME, dto)
+    response2 = Response(1, DATETIME, str(dto))
+    print(response)
+    print(response2)
+    print(response.to_dict())
+    print(response2.to_dict())
+    print(response.format())
+    print(response2.format())
+
+

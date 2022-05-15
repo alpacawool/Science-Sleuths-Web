@@ -75,8 +75,8 @@ def validate_project(func):
                             return func(project_id, *args, **kwargs)
                     return {'message': 'Unauthorized.'}, 401
             return {'message': 'Invalid session cookie.'}, 400
-        except:
-            print("Error validating session cookie.")
+        except Exception as e:
+            print(e)
             return {'message': 'Error validating session cookie.'}, 400
     return wrapper
 
@@ -184,25 +184,18 @@ def get_project_observations(project_id):
     Returns observations list of a single project
     :param project_id: ID of project
     """
-    db = firestore.client()
-    obs_stream = db.collection(u'Projects').document(project_id)\
-        .collection(u'Observations').stream()
-    observations_list = []
-    for obs in obs_stream:
-        observations_list.append(Observation.from_dict(obs.to_dict()).format())
-    return json.dumps(observations_list)
+    observations = get_all_project_observations(project_id)
+    return json.dumps(observations)
 
   
 @app.route('/projects/<string:project_id>/download', methods=['GET', 'POST'])
+@validate_project
 def download_csv_file(project_id):
     '''
     Returns .csv file of a single project
     param project_id: ID of project
     Credits to vectorfrog @ https://stackoverflow.com/questions/26997679/
     '''
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
     try:
         file_content = io.StringIO()
         file_content = write_project_to_file(project_id)
@@ -210,9 +203,9 @@ def download_csv_file(project_id):
         csv_response.headers["Content-Disposition"] = "attachment; filename=export.csv"
         csv_response.headers["Content-type"] = "text/csv"
         return csv_response
-    except auth.InvalidSessionCookieError as e:
+    except Exception as e:
         print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+        return {'message': 'Error creating CSV file.'}, 400
 
 
 @app.route('/users/<string:user_id>/projects/create', methods=['GET', 'POST'])
@@ -222,55 +215,31 @@ def create_new_project(user_id):
     Adds a new project to the firestore database
     :return: the project ID
     """
-    content = request.json
+    try:
+        content = request.json
 
-    new_project = Project(
-        user_id,
-        content['title'],
-        content['description'],
-        []
-    )
-
-    for question in content['questions']:
-        new_question = Question(
-            question['question_num'],
-            question['prompt'],
-            question['type'],
-            question['choices'],
-            question['range_min'],
-            question['range_max']
+        new_project = Project(
+            user_id,
+            content['title'],
+            content['description'],
         )
-        new_project.add_question(new_question)
-        
+
         for question in content['questions']:
-
-            # Addressing range being submitted as string
-            range_min = question['range_min']
-            range_max = question['range_max']
-
-            if question['type'] == 1:
-                if range_min:
-                    range_min = int(range_min)
-                if range_max:
-                    range_max = int(range_max)
-            if question['type'] == 2:
-                if range_min:
-                    range_min = float(range_min)
-                if range_max:
-                    range_max = float(range_max)
-
             new_question = Question(
                 question['question_num'],
                 question['prompt'],
                 question['type'],
                 question['choices'],
-                range_min,
-                range_max,
+                question['range_min'],
+                question['range_max']
             )
             new_project.add_question(new_question)
 
         new_project_id = create_project(new_project)
         return {"project_id" : new_project_id}
+    except Exception as e:
+        print(e)
+        return {'message': 'Error creating new project.'}, 400
 
 
 @app.route('/projects/<string:project_id>/delete', methods=['GET', 'DELETE'])
@@ -286,23 +255,19 @@ def delete_existing_project(project_id):
 def update_project(project_id):
     pass
 
-@app.route('/create-sample-project', methods=['GET','POST'])
-def create_sample_project():
+@app.route('/users/<string:user_id>/create-sample-project', methods=['GET','POST'])
+@validate_user
+def create_sample_project(user_id):
     '''
     Adds a sample project to the firestore database
     Returns the project id
     '''
-    session_cookie = request.cookies.get('session')
-    if not session_cookie:
-        return {'message': 'No session cookie provided'}, 400
     try:
-        decoded_claims = auth.verify_session_cookie(session_cookie, check_revoked=True)
-        user_id = decoded_claims.get("uid")
         new_project_id = generate_random_project(user_id)
         return {"project_id" : new_project_id}
-    except auth.InvalidSessionCookieError as e:
+    except Exception as e:
         print(e)
-        return {'message': 'Invalid session cookie.'}, 400
+        return {'message': 'Error generating sample project.'}, 400
 
 
 
@@ -328,4 +293,4 @@ def not_found(e):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

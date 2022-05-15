@@ -33,7 +33,7 @@ const Projects = (props) => {
     // Show loading indicator
     showLoadingModal();
 
-    fetch('/create-sample-project')
+    fetch(`/users/${user_id}/create-sample-project`)
     .then(response => {
       if (response.status === 200) {
          return response.json();
@@ -43,11 +43,11 @@ const Projects = (props) => {
     })
     .then(data => {
       navigate(`/dash/projects/${data.project_id}`, {replace: true, state: location.state});
-      hideLoadingModal()
+      hideLoadingModal();
     })
     .catch(error => {
-      console.log(error)
-      hideLoadingModal()
+      console.log(error);
+      hideLoadingModal();
     })
   }
 
