@@ -743,6 +743,8 @@ def write_project_to_file(project_id: str):
             data.append(obs_dict['datetime'])
             if obs_dict.get('image_url'):
                 data.append(obs_dict['image_url'])
+            else:
+                data.append("")
             data.append(response['question_num'])
             data.append(response['type'])
             data.append(response['response'])
