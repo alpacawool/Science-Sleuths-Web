@@ -7,14 +7,14 @@ import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import "./Login.scss";
 
-import { auth, authUser } from "../../utilities/js/firebase";
+import { auth, authUser, parseFirebaseAuthError } from "../../utilities/js/firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
   let user_id;
   let display_name;
@@ -40,8 +40,7 @@ const Login = () => {
         })
       )
       .catch((err) => {
-        console.log(err);
-        setMessage(err.code);
+        setErrorMessage(parseFirebaseAuthError(err.code));
       });
   };
 
@@ -75,7 +74,7 @@ const Login = () => {
         <button type="submit" className="login-button">
           Login
         </button>
-        {message && <p> {message} </p>}
+        {errorMessage && (<p className="error" style={{color: "red"}}> {errorMessage} </p>)}
         <br></br>
         <span className="signup-message">
           Don't have an account yet? <a href="/signup">Sign up.</a>

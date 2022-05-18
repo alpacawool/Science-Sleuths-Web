@@ -1,8 +1,8 @@
 import os
 import io
-from datetime import datetime
+from datetime import datetime, date
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, exceptions
 from dotenv import load_dotenv
 from typing import List
 import csv
@@ -31,6 +31,10 @@ class InvalidQuestionTypeError(Exception):
 
 
 class InvalidResponseTypeError(Exception):
+    pass
+
+
+class InvalidDatetimeFormatError(ValueError):
     pass
 
 
@@ -84,13 +88,11 @@ class Teacher(User):
     A class representing a user (teacher) document in the top-level collection
     Users.
     """
-    def __init__(self, first_name: str, last_name: str, email: str,
-                 hashed_pwd: str, is_admin: bool = True,
+    def __init__(self, first_name: str, last_name: str, email: str, is_admin: bool = True,
                  owned_projects: List = None):
         super().__init__(first_name, last_name)
-        self.email = email
         self.is_admin = is_admin
-        self.hashed_pwd = hashed_pwd
+        self.email = email
         if owned_projects is None:
             self.owned_projects = []
         else:
@@ -99,7 +101,7 @@ class Teacher(User):
     @staticmethod
     def from_dict(source: dict) -> "Teacher":
         user = Teacher(source[u'first_name'], source[u'last_name'],
-                       source[u'email'], source[u'hashed_pwd'])
+                       source[u'email'])
 
         if u'is_admin' in source:
             user.is_admin = source[u'is_admin']
@@ -117,7 +119,6 @@ class Teacher(User):
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'email': self.email,
-            u'hashed_pwd': self.hashed_pwd,
             u'is_admin': self.is_admin,
             u'owned_projects': [project_summary.to_dict() for project_summary
                                 in self.owned_projects]
@@ -220,15 +221,23 @@ class Question:
     def __init__(self, question_num, prompt: str, question_type: int,
                  choices: List = None, range_min: int = None,
                  range_max: int = None):
-        self.question_num = question_num
+        self.question_num = int(question_num)
         self.prompt = prompt
         self.type = question_type
+        self.range_min = None
+        self.range_max = None
         if choices is None:
             self.choices = []
         else:
             self.choices = choices
-        self.range_min = range_min
-        self.range_max = range_max
+        if question_type == INTEGER and range_min:
+            self.range_min = int(range_min)
+        if question_type == INTEGER and range_max:
+            self.range_max = int(range_max)
+        if question_type == FPN and range_min:
+            self.range_min = float(range_min)
+        if question_type == FPN and range_max:
+            self.range_max = float(range_max)
 
     @staticmethod
     def from_dict(source: dict) -> "Question":
@@ -281,34 +290,44 @@ class Observation:
     Observations.
     """
     def __init__(self, project_id: str, author_id: str, first_name: str,
-                 last_name: str, title: str, date_time=None):
+                 last_name: str, title: str, date_time: date = None, image_url: str = None):
         self.project_id = project_id
         self.author_id = author_id
         self.first_name = first_name
         self.last_name = last_name
         self.title = title
-        self.datetime = date_time  # stored as datetime object
+        self.image_url = image_url
         self.responses = []  # contains response objects
 
+        # store datetime as a datetime object
+        if not date_time or isinstance(date_time, date):
+            self.datetime = date_time
+        elif isinstance(date_time, str):
+            try:
+                self.datetime = datetime.fromisoformat(date_time)
+            except ValueError:
+                raise InvalidDatetimeFormatError("String is not a valid ISO format.")
+        else:
+            raise InvalidDatetimeFormatError("Datetime response must be stored as a Datetime object or valid ISO format.")
+
     @staticmethod
-    # from Firestore dict
+    # convert from Firestore dict to Python object
     def from_dict(source: dict) -> "Observation":
         observation = Observation(source[u'project_id'], source[u'author_id'],
                                   source[u'first_name'], source[u'last_name'],
-                                  source[u'title'])
+                                  source[u'title'], source[u'datetime'])
 
-        if u'datetime' in source:
-            # datetime in dict is stored as DatetimeWithNanoseconds
-            observation.datetime = str(source[u'datetime'])
+        if u'image_url' in source:
+            observation.set_image_url(source[u'image_url'])
 
         if u'responses' in source:
             for response_dict in source[u'responses']:
                 response = Response.from_dict(response_dict)
-                observation.responses.append(response)
+                observation.add_response(response)
 
         return observation
 
-    # to Firestore dict
+    # Python object to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'project_id': self.project_id,
@@ -316,6 +335,7 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
+            u'image_url': self.image_url,
             u'datetime': self.datetime,
             u'responses': [response.to_dict() for response in self.responses]
         }
@@ -330,15 +350,13 @@ class Observation:
             u'first_name': self.first_name,
             u'last_name': self.last_name,
             u'title': self.title,
+            u'image_url': self.image_url,
             u'datetime': str(self.datetime),
             u'responses': [response.format() for response in self.responses]
         }
         return dest
 
     def add_response(self, response: "Response"):
-        """
-        Adds a Response object to the responses.
-        """
         self.responses.append(response)
 
     def remove_response(self, question_num: int):
@@ -349,6 +367,9 @@ class Observation:
     def set_datetime(self, date_time):
         self.datetime = date_time
 
+    def set_image_url(self, image_url: str):
+        self.image_url = image_url
+
 
 class Response:
     """
@@ -358,26 +379,33 @@ class Response:
     def __init__(self, question_num: int, question_type: int, response):
         self.question_num = question_num
         self.type = question_type
-        self.response = response  # response is variable depending on type
+
+        # store datetime responses as datetime objects
+        if self.type == DATETIME and isinstance(response, date):
+            self.response = response
+        elif self.type == DATETIME and isinstance(response, str):
+            try:
+                self.response = datetime.fromisoformat(response)
+            except ValueError:
+                raise InvalidDatetimeFormatError("String is not a valid ISO format.")
+        elif self.type == DATETIME:
+            raise InvalidDatetimeFormatError("Datetime response must be stored as a Datetime object or valid ISO format.")
+        else:
+            self.response = response
+
 
     @staticmethod
+    # convert from Firestore dict to Python object
     def from_dict(source: dict) -> "Response":
-        resp = source[u'response']
-        if source[u'type'] == DATETIME:
-            resp = str(resp)
-        response = Response(source[u'question_num'], source[u'type'], resp)
+        return Response(source[u'question_num'], source[u'type'], source[u'response'])
 
-        return response
-
+    # Python object to Firestore dict
     def to_dict(self) -> dict:
         dest = {
             u'question_num': self.question_num,
             u'type': self.type,
             u'response': self.response
         }
-        if self.type == DATETIME:
-            dest[u'response'] = self.response
-
         return dest
 
     # removes any nested objects
@@ -410,46 +438,35 @@ def create_student(student: "Student") -> str:
     return student_ref[1].id
 
 
-def create_teacher(teacher: "Teacher") -> str:
+def create_teacher(teacher: "Teacher", user_id: str = None) -> str:
     """
-    Takes a Teacher instance and adds it to Firestore db
+    Takes a Teacher instance and optionally the user_id to create the teacher under and adds
+    it to the Firestore db. If no user_id is specified, one will be automatically generated.
     :param teacher: the Teacher instance
-    :return: the user_id
+    :param user_id: the optional user_id to add the teacher document to
+    :return: user_id if successful
     """
-    db = firestore.client()
-    teacher_ref = db.collection(u'Users').add(teacher.to_dict())
-
-    return teacher_ref[1].id
-
+    try:
+        db = firestore.client()
+        # if a user_id is specified, use it
+        if user_id:
+            teacher_ref = db.collection(u'Users').document(user_id)
+            teacher_ref.set(teacher.to_dict())
+            return user_id
+        # otherwise generate one automatically
+        else:
+            teacher_ref = db.collection(u'Users').add(teacher.to_dict())
+            return teacher_ref[1].id
+    except exceptions.FirebaseError as e:
+        print(e)
+        return None
 
 def get_user(user_id: str) -> dict:
     db = firestore.client()
     user = db.collection(u'Users').document(user_id).get()
     if user.exists:
         return user.to_dict()
-    print(u'No such user exists!')
-
-def modify_teacher_email(user_id: str, email: str):
-    """
-    Modifies the teacher's email address for the given user_id.
-    :param user_id: the user_id of the teacher to modify
-    :param email: the new email address
-    """
-    db = firestore.client()
-
-    return db.collection(u'Users').document(user_id).update({u'email': email})
-
-
-def modify_teacher_hashed_pwd(user_id: str, hashed_pwd: str):
-    """
-    Modifies the teacher's hashed_pwd for the given user_id.
-    :param user_id: the user_id of the teacher to modify
-    :param hashed_pwd: the new hashed password
-    """
-    db = firestore.client()
-
-    return db.collection(u'Users').document(user_id)\
-        .update({u'hashed_pwd': hashed_pwd})
+    print(u'No user with user_id {} found'.format(user_id));
 
 
 def remove_user(user_id: str):
@@ -458,7 +475,6 @@ def remove_user(user_id: str):
     :param user_id: the user_id to delete
     """
     db = firestore.client()
-
     return db.collection(u'Users').document(user_id).delete()
 
 
@@ -469,19 +485,23 @@ def create_project(project: "Project") -> str:
     :param project: the Project instance
     :return: the project_id
     """
-    db = firestore.client()
-    project_ref = db.collection(u'Projects').document()
-    project_id = project_ref.id
-    project_ref.set(project.to_dict())
+    try:
+        db = firestore.client()
+        project_ref = db.collection(u'Projects').document()
+        project_id = project_ref.id
+        project_ref.set(project.to_dict())
 
-    # create and add project summary to the project owner
-    project_summary = ProjectSummary(project_id, project.get_title(),
-                                     project.get_description())
-    db.collection(u'Users').document(project.get_owner_id()) \
-        .update({u'owned_projects': firestore
-                .ArrayUnion([project_summary.to_dict()])})
+        # create and add project summary to the project owner
+        project_summary = ProjectSummary(project_id, project.get_title(),
+                                        project.get_description())
+        db.collection(u'Users').document(project.get_owner_id()) \
+            .update({u'owned_projects': firestore
+                    .ArrayUnion([project_summary.to_dict()])})
 
-    return project_ref.id
+        return project_ref.id
+    except exceptions.FirebaseError as e:
+        print(e)
+        return None
 
 
 def _delete_collection(coll_ref, batch_size=50):
@@ -502,16 +522,16 @@ def _delete_collection(coll_ref, batch_size=50):
         return _delete_collection(coll_ref, batch_size)
 
 
-def delete_project(project_id: str) -> int:
+def delete_project(project_id: str) -> str:
     """
     Takes a project_id and deletes it from Firestore db. Also deletes the
     subcollection Observations and any existing documents in it along with the
     project summary from the owner_id.
     :param project_id: the project_id to delete
+    :return: the deleted project_id if successful
     """
-    db = firestore.client()
-
     try:
+        db = firestore.client()
         # get the owner_id
         proj = db.collection(u'Projects').document(project_id).get()
         user_id = proj.to_dict()['owner_id']
@@ -532,10 +552,10 @@ def delete_project(project_id: str) -> int:
             # delete the project summary from the owner
             db.collection(u'Users').document(user_id).\
                 update({u'owned_projects': owned_projects})
-            return 0
+            return project_id
     except Exception as e:
         print(e)
-        return -1
+        return None
 
 
 def modify_project_title(project_id: str, title: str):
@@ -665,7 +685,7 @@ def get_all_project_observations(project_id: str) -> List["Observation"]:
     observations = []
     for obs in obs_stream:
         # convert to Observation
-        observations.append(Observation.from_dict(obs.to_dict()))
+        observations.append(Observation.from_dict(obs.to_dict()).format())
     return observations
 
 
@@ -682,7 +702,7 @@ def write_project_to_file(project_id: str):
         .collection(u'Observations').stream()
 
     title = [{"project_id": project_id}]
-    header = ['author_id', 'first_name', 'last_name', 'title', 'datetime',
+    header = ['author_id', 'first_name', 'last_name', 'title', 'datetime', 'image_url',
               'question_num', 'type', 'response']
     
     file_content = io.StringIO()
@@ -699,6 +719,10 @@ def write_project_to_file(project_id: str):
             data.append(obs_dict['last_name'])
             data.append(obs_dict['title'])
             data.append(obs_dict['datetime'])
+            if obs_dict.get('image_url'):
+                data.append(obs_dict['image_url'])
+            else:
+                data.append("")
             data.append(response['question_num'])
             data.append(response['type'])
             data.append(response['response'])
@@ -707,107 +731,10 @@ def write_project_to_file(project_id: str):
     return file_content
 
 
-def add_example_data():
-    """
-    Creates some example data using the classes/functions above.
-    """
-    # create & add three students
-    num_students = 3
-    student_first_names = ["Jane", "John", "Mickey"]
-    student_last_names = ["Doe", "Deere", "Mouse"]
-    student_ids = []
-    for i in range(num_students):
-        student = Student(student_first_names[i], student_last_names[i])
-        student_ids.append(create_student(student))
-
-    # create & add three teachers
-    num_teachers = 3
-    teacher_first_names = ["Marie", "Joseph", "David"]
-    teacher_last_names = ["Curie", "Heller", "Johnson"]
-    emails = ["mariecurie@test.com", "josephheller@test.com",
-              "davidjohnson@test.com"]
-    hashed_pwds = ["BLAH1234", "abcdefg", "somehash"]
-    teacher_ids = []
-
-    for i in range(num_teachers):
-        teacher = Teacher(teacher_first_names[i], teacher_last_names[i],
-                          emails[i], hashed_pwds[i])
-        teacher_ids.append(create_teacher(teacher))
-
-    # create & add three projects
-    num_projects = 3
-    titles = ["Study of B. oleracea", "Better Betta Fish", "Birdwatching Log"]
-    descriptions = ["In this three week exploration, we will be gathering...",
-                    "Color pattern observations in Siamese Fighting...",
-                    "Please submit all birds spotted HERE. IMPORTANT..."]
-
-    # with three questions per project
-    num_questions = 3
-    prompts = [["Describe weather...",
-                "Provide height start...",
-                "How many lea..."],
-               ["Describe fish pattern...",
-                "Choose the correct...",
-                "What time of day did..."],
-               ["What is your favorite...",
-                "How many birds do you...",
-                "True or false..."]]
-    types = [[TEXT, FPN, INTEGER],
-             [TEXT, MULTIPLE_CHOICE, DATETIME],
-             [TEXT, INTEGER, BOOLEAN]]
-    choices = [[None, None, None],
-               [None, ["Siamese fighting fish", "Peaceful betta",
-                       "Betta smargadina", "Spotfin betta"], None],
-               [None, None, None]]
-    project_ids = []
-
-    # create each project and add questions
-    for i in range(num_projects):
-        project = Project(teacher_ids[i], titles[i], descriptions[i])
-        for j in range(num_questions):
-            project.add_question(Question(j + 1, prompts[i][j], types[i][j],
-                                          choices[i][j]))
-        project_ids.append(create_project(project))
-
-    # create one more project for testing
-    project = Project(teacher_ids[2], "A testing testful test",
-                      "For testing to see if ArrayUnion works")
-    for i in range(num_questions):
-        project.add_question(Question(i + 1, prompts[0][i], types[0][i],
-                                      choices[0][i]))
-    project_ids.append(create_project(project))
-
-    project_responses = [[["Sunny...", 4.25, 3],
-                          ["Rainy...", 2.74, 8],
-                          ["Cloudy...", 24.2, 12]],
-                         [["Shiny...", 0, datetime.datetime.now()],
-                          ["Gray...", 2, datetime.datetime.now()],
-                          ["Blue...", 2, datetime.datetime.now()]],
-                         [["The great horned owl", 12, False],
-                          ["American Eagle", 7, True],
-                          ["Nothing", 8, True]]]
-
-    # create one observation per student per project
-    for i in range(num_projects):
-        for j in range(len(student_ids)):
-            observation = Observation(project_ids[i], student_ids[j],
-                                      student_first_names[j],
-                                      student_last_names[j],
-                                      "test title")
-            # number of questions per observation
-            for k in range(num_questions):
-                response = Response(k + 1, types[i][k],
-                                    project_responses[i][j][k])
-                observation.add_response(response)
-            create_observation(project_ids[i], observation)
-
-
 if __name__ == "__main__":
     # project_id = "0XGU56ib2M8nQ51EDLB0"
     # obs_list = get_all_project_observations(project_id)
     # for obs in obs_list:
     #     print(obs)
-    #     for res in obs.responses:
-    #         print(res)
     pass
 

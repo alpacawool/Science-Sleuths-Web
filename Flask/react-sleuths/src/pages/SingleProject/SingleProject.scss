@@ -33,6 +33,23 @@
         }
     }
 
+    .delete-project-button {
+        all:unset;
+        background-color: colors.$primary-color-lighter;
+        padding:0.5rem;
+        border-radius:0.3rem;
+        margin-top:0.5rem;
+        font-size:0.9em;
+        display:flex;
+        font-weight:500;
+        
+        &:hover {
+            background-color:colors.$primary-color-darkest;
+            color:colors.$primary-color-text;
+            cursor:pointer;
+        }
+    }
+
     
     .project-code-container {
         display:flex;

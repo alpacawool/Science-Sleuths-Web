@@ -23,8 +23,6 @@ export const ProjectTable = (props) => {
     navigate(`/dash/projects/${project_id}`, {replace: true, state: location.state});
   }
 
-  
-
   return (
     <div 
     className={`${props.openDrawer ? "" : "collapsed-projects-list-container"} 

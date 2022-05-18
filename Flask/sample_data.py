@@ -34,8 +34,7 @@ def generate_random_project(user_id):
         if i == 3:
             choices = [fake.word() for i in range(4)]
         new_question = Question(i+1, question_prompts[i], i,
-            choices, None, None
-        )
+            choices)
         new_project.add_question(new_question)
     
     # Create project

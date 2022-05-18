@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
-import { auth, authUser } from "../../utilities/js/firebase";
+import { auth, authUser, parseFirebaseAuthError } from "../../utilities/js/firebase";
 import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
 import {
   createUserWithEmailAndPassword,
@@ -21,7 +21,7 @@ export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState({ firstName: "", lastName: "" });
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   let user_id;
   let display_name;
   
@@ -75,7 +75,7 @@ export const Signup = () => {
       )
       .catch((err) => {
         console.log(err);
-        setMessage(err.code);
+        setErrorMessage(parseFirebaseAuthError(err.code));
       });
     }
   };
@@ -142,7 +142,7 @@ export const Signup = () => {
           Sign up
         </button>
         <br></br>
-        {message && <p> {message} </p>}
+        {errorMessage && (<p className="error" style={{color: "red"}}> {errorMessage} </p>)}
         <br></br>
         <span className="login-message">
           Already have an account? <a href="/login">Log in.</a>

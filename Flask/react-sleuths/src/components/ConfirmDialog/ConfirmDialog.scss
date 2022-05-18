@@ -1,0 +1,16 @@
+@use './../../utilities/css/colors';
+
+.confirm-dialog {
+    z-index:5000;
+}
+
+
+
+/* Smartphone */
+@media screen and (max-width: 450px) {
+
+    .confirm-dialog {
+        height:50%;
+    }
+}
+
