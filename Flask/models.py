@@ -452,10 +452,11 @@ def create_teacher(teacher: "Teacher", user_id: str = None) -> str:
         if user_id:
             teacher_ref = db.collection(u'Users').document(user_id)
             teacher_ref.set(teacher.to_dict())
+            return user_id
         # otherwise generate one automatically
         else:
             teacher_ref = db.collection(u'Users').add(teacher.to_dict())
-        return teacher_ref[1].id
+            return teacher_ref[1].id
     except exceptions.FirebaseError as e:
         print(e)
         return None

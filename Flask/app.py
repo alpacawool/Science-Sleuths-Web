@@ -134,7 +134,7 @@ def create_user():
         message = ', '.join(missing_params) + " required."
         return {'message': message}, 400
     res = create_teacher(Teacher(data['first_name'], data['last_name'], data['email']), data['user_id'])
-    if res == 0:
+    if res:
         return {'message': 'Success!'}, 200
     else:
         return {'message': "Error creating user."}, 400
