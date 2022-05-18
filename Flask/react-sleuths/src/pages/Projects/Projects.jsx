@@ -15,7 +15,7 @@ const Projects = (props) => {
 
   let navigate = useNavigate();
 
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
   const user_id = location.state.user_id;
 

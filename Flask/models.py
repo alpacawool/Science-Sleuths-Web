@@ -406,7 +406,6 @@ class Response:
             u'type': self.type,
             u'response': self.response
         }
-
         return dest
 
     # removes any nested objects
@@ -445,53 +444,28 @@ def create_teacher(teacher: "Teacher", user_id: str = None) -> str:
     it to the Firestore db. If no user_id is specified, one will be automatically generated.
     :param teacher: the Teacher instance
     :param user_id: the optional user_id to add the teacher document to
-    :return: 0 if successful, 1 if error
+    :return: user_id if successful
     """
     try:
         db = firestore.client()
+        # if a user_id is specified, use it
         if user_id:
             teacher_ref = db.collection(u'Users').document(user_id)
             teacher_ref.set(teacher.to_dict())
-            return user_id
+        # otherwise generate one automatically
         else:
             teacher_ref = db.collection(u'Users').add(teacher.to_dict())
-            return teacher_ref[1].id
+        return teacher_ref[1].id
     except exceptions.FirebaseError as e:
         print(e)
-        return 1
-    except Exception as e:
-        print(e)
-        return 2
-
+        return None
 
 def get_user(user_id: str) -> dict:
     db = firestore.client()
     user = db.collection(u'Users').document(user_id).get()
     if user.exists:
         return user.to_dict()
-    print(u'No such user exists!')
-
-def modify_teacher_email(user_id: str, email: str):
-    """
-    Modifies the teacher's email address for the given user_id.
-    :param user_id: the user_id of the teacher to modify
-    :param email: the new email address
-    """
-    db = firestore.client()
-
-    return db.collection(u'Users').document(user_id).update({u'email': email})
-
-
-def modify_teacher_hashed_pwd(user_id: str, hashed_pwd: str):
-    """
-    Modifies the teacher's hashed_pwd for the given user_id.
-    :param user_id: the user_id of the teacher to modify
-    :param hashed_pwd: the new hashed password
-    """
-    db = firestore.client()
-
-    return db.collection(u'Users').document(user_id)\
-        .update({u'hashed_pwd': hashed_pwd})
+    print(u'No user with user_id {} found'.format(user_id));
 
 
 def remove_user(user_id: str):
@@ -500,7 +474,6 @@ def remove_user(user_id: str):
     :param user_id: the user_id to delete
     """
     db = firestore.client()
-
     return db.collection(u'Users').document(user_id).delete()
 
 
@@ -511,19 +484,23 @@ def create_project(project: "Project") -> str:
     :param project: the Project instance
     :return: the project_id
     """
-    db = firestore.client()
-    project_ref = db.collection(u'Projects').document()
-    project_id = project_ref.id
-    project_ref.set(project.to_dict())
+    try:
+        db = firestore.client()
+        project_ref = db.collection(u'Projects').document()
+        project_id = project_ref.id
+        project_ref.set(project.to_dict())
 
-    # create and add project summary to the project owner
-    project_summary = ProjectSummary(project_id, project.get_title(),
-                                     project.get_description())
-    db.collection(u'Users').document(project.get_owner_id()) \
-        .update({u'owned_projects': firestore
-                .ArrayUnion([project_summary.to_dict()])})
+        # create and add project summary to the project owner
+        project_summary = ProjectSummary(project_id, project.get_title(),
+                                        project.get_description())
+        db.collection(u'Users').document(project.get_owner_id()) \
+            .update({u'owned_projects': firestore
+                    .ArrayUnion([project_summary.to_dict()])})
 
-    return project_ref.id
+        return project_ref.id
+    except exceptions.FirebaseError as e:
+        print(e)
+        return None
 
 
 def _delete_collection(coll_ref, batch_size=50):
@@ -544,16 +521,16 @@ def _delete_collection(coll_ref, batch_size=50):
         return _delete_collection(coll_ref, batch_size)
 
 
-def delete_project(project_id: str) -> int:
+def delete_project(project_id: str) -> str:
     """
     Takes a project_id and deletes it from Firestore db. Also deletes the
     subcollection Observations and any existing documents in it along with the
     project summary from the owner_id.
     :param project_id: the project_id to delete
+    :return: the deleted project_id if successful
     """
-    db = firestore.client()
-
     try:
+        db = firestore.client()
         # get the owner_id
         proj = db.collection(u'Projects').document(project_id).get()
         user_id = proj.to_dict()['owner_id']
@@ -574,10 +551,10 @@ def delete_project(project_id: str) -> int:
             # delete the project summary from the owner
             db.collection(u'Users').document(user_id).\
                 update({u'owned_projects': owned_projects})
-            return 0
+            return project_id
     except Exception as e:
         print(e)
-        return -1
+        return None
 
 
 def modify_project_title(project_id: str, title: str):

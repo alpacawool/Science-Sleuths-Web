@@ -32,8 +32,6 @@ def validate_user(func):
         except auth.InvalidSessionCookieError as e:
             print(e)
             if str(e).startswith("Token used too early"):
-                if user_id != decoded_claims.get("uid"):
-                    return {'message': 'Unauthorized.'}, 401
                 return func(user_id, *args, **kwargs)
             return {'message': 'Invalid session cookie.'}, 400
         except Exception as e:
@@ -65,15 +63,7 @@ def validate_project(func):
         except auth.InvalidSessionCookieError as e:
             print(e)
             if str(e).startswith("Token used too early"):
-                user_id = decoded_claims.get("uid")
-                # ensure the user has access to the project_id
-                user_dict = get_user(user_id)
-                owned_projects = user_dict.get("owned_projects")
-                if owned_projects:
-                    for project in owned_projects:
-                        if project.get("project_id") == project_id:
-                            return func(project_id, *args, **kwargs)
-                    return {'message': 'Unauthorized.'}, 401
+                return func(project_id, *args, **kwargs)
             return {'message': 'Invalid session cookie.'}, 400
         except Exception as e:
             print(e)
@@ -185,7 +175,6 @@ def get_project_observations(project_id):
     :param project_id: ID of project
     """
     observations = get_all_project_observations(project_id)
-    print(observations)
     return json.dumps(observations)
 
   
@@ -246,9 +235,9 @@ def create_new_project(user_id):
 @app.route('/projects/<string:project_id>/delete', methods=['GET', 'DELETE'])
 @validate_project
 def delete_existing_project(project_id):
-    if delete_project(project_id) == 0:
-        return {'message': 'Success!'}, 200
-    return {'message': 'Error deleting project.'}, 400
+    if delete_project(project_id):
+        return {'message': 'Successfully deleted project {}!'.format(project_id)}, 200
+    return {'message': 'Error deleting project {}!'.format(project_id)}, 400
 
 
 @app.route('/projects/<string:project_id>/update', methods=['GET', 'POST'])
