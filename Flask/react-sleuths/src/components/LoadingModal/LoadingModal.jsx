@@ -1,7 +1,14 @@
+/**
+ * LoadingModal.jsx
+ * A modal designed to blur the surrounding screen and show a loading circle
+ * Custom message can be passed as a prop
+ * By design, it blocks behavior to prevent user from clicking once it appears.
+ * Therefore, it is important to handle some sort of exit out of this blocking
+ * behavior if for some reason the action is not successful.
+ */
 import React from 'react'
 import Modal from '@mui/material/Modal';
 import CircularProgress from '@mui/material/CircularProgress';
-
 
 
 import './LoadingModal.scss'

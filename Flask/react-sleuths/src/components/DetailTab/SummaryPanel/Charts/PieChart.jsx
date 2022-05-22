@@ -1,3 +1,8 @@
+/**
+ * PieChart.jsx
+ * Displays categorical data as a pie chart, such as
+ * True or False or Multiple Choice.
+ */
 import { Chart as ChartJS, ArcElement, Tooltip, Legend} from 'chart.js';
 import { Pie} from 'react-chartjs-2';
 import { 

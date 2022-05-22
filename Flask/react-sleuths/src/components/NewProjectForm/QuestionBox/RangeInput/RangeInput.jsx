@@ -1,3 +1,8 @@
+/**
+ * RangeInput.jsx
+ * Designed to handle form fields if the question type is set to numeric
+ * If the checkbox is checked, the user is able to set a minimum and maximum value
+ */
 import {useState} from 'react'
 
 import Grid from '@mui/material/Grid';

@@ -1,3 +1,10 @@
+/**
+ * ObservationModal.jsx
+ * A version of MUI Modal that overlays the entire screen with single observation data
+ * Designed to change size based on navigation bar size. No data calls are directly made within this modal,
+ * it is grabbing data as props from the parent to create a seamless transition between each observation
+ * and the entire project.
+ */
 import React, { useState, useEffect, useRef } from "react";
 import Modal from "@mui/material/Modal";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
