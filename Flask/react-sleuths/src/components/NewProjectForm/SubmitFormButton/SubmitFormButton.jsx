@@ -1,3 +1,7 @@
+/**
+ * SubmitFormButton.jsx
+ * A button with onClick behavior to create a new project
+ */
 import React from 'react'
 
 import './SubmitFormButton.scss';

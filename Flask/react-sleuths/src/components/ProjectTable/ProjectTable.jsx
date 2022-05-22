@@ -1,6 +1,7 @@
-/*
-    Project Table for Projects Page
-*/
+/***
+ * ProjectTable.jsx
+ * Project Table for Projects Page
+ */
 
 import React, {useState, useEffect} from 'react'
 import { useNavigate, useLocation } from "react-router-dom";

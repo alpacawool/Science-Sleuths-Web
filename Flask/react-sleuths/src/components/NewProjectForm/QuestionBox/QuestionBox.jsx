@@ -1,3 +1,11 @@
+/**
+ * QuestionBox.jsx
+ * The overall field for an individual questions within the new project form
+ * Has conditionals that based on question type may show more fields in addition
+ * to the question prompt. For example, multiple choice questions will display
+ * additional fields to define the choices. If there is more than one question,
+ * a delete button is displayed to allow questions to be deleted.
+ */
 import {useState, useEffect} from 'react'
 
 import TextField from '@mui/material/TextField';

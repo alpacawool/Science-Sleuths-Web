@@ -1,0 +1,20 @@
+@use './../../utilities/css/colors';
+
+.science-logo-overall {
+    color: colors.$form-text-label;
+    font-size: 1.8em;
+    display:inline-flex;
+    align-items: center;
+    padding-left:0.3em;
+    padding-right:0.7em;
+    pointer-events:none;
+
+    .science-icon {
+        margin:0.4em;
+        font-size:1.15em;
+    }
+
+    .science-text {
+        font-weight:800;
+    }
+}

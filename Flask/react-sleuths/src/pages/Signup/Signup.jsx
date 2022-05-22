@@ -15,6 +15,7 @@ import {
 } from "firebase/auth";
 
 import "./Signup.scss";
+import { ScienceLogo } from "../../components/ScienceLogo/ScienceLogo";
 
 export const Signup = () => {
   const navigate = useNavigate();
@@ -83,6 +84,7 @@ export const Signup = () => {
   return (
     <div className="form-container">
       <form className="signup-form">
+        <ScienceLogo />
         <h1>Create an account</h1>
 
         <TextField

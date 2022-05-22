@@ -1,3 +1,8 @@
+/**
+ * ObservationQuestion.jsx
+ * Display of a single observation question within the observation modal
+ */
+
 import React from 'react'
 import {formatDate} from './../../../../../utilities/js/dateHelper.js'
 import './ObservationQuestion.scss'

@@ -1,3 +1,8 @@
+/**
+ * MultipleChoice.jsx
+ * Handles the multiple choice question type in the new project form
+ * Currently set up to statically handle four defined choices
+ */
 import React from 'react'
 
 import TextField from '@mui/material/TextField';

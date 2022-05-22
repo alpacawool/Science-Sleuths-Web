@@ -13,7 +13,7 @@ https://sleuths.herokuapp.com/
 Python 3.10.4
 Node 17.9.0
 npm 8.5.5
-Google Firestore
+Google Firebase - Firestore, Authentication
 ```
 
 ## Installation

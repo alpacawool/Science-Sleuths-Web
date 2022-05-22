@@ -1,3 +1,7 @@
+/**
+ * BarChart.jsx
+ * Displays numeric data, sorted by response number
+ */
 import {
     Chart as ChartJS,
     CategoryScale,
