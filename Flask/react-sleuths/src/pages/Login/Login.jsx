@@ -10,6 +10,7 @@ import "./Login.scss";
 import { auth, authUser, parseFirebaseAuthError } from "../../utilities/js/firebase";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { createFetchRequest } from "../../utilities/js/fetchPostHelper";
+import { ScienceLogo } from "../../components/ScienceLogo/ScienceLogo";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -47,6 +48,7 @@ const Login = () => {
   return (
     <div className="form-container">
       <form className="login-form" onSubmit={onFormSubmit}>
+        <ScienceLogo/>
         <h1>Hello!</h1>
 
         <TextField
