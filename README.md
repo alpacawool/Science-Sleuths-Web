@@ -1,12 +1,81 @@
 # Science Sleuths Web Admin Portal
-https://sleuths.herokuapp.com/
+## Mobile and web application for teacher and student research collaboration
+**Bruce Marandino, Timothy Hong, Patricia Booth**
 
+<img src="/readme-pictures/demonstration.gif" width=700><br>
+
+Citizen Science describes community-driven research
+where everyday citizens can contribute to science
+projects. Science Sleuths aims to be an educational
+platform that enables teachers and students to
+collaborate on scientific research. A cross-platform
+mobile application was developed in Flutter for
+students to submit observation data. This provides the
+advantage of allowing students to note observations
+anywhere they go with any mobile device they have.
+Collective observation data is displayed for teachers in
+the web portal built in Flask and React. In this portal,
+the teachers can manage existing projects, create new
+projects, and view detailed project summaries and
+relevant statistical information.
+Our team was new to many of the technologies used in
+the project but we accepted the challenge. We learned
+that designing and developing two applications has the
+advantage of being independent entities for
+separations of concern but it also requires agreement
+on methods of communication used so both
+applications can send and receive the data seamlessly.
 ## Table of Contents
 
+- [Features](#features)
+- [Design](#design)
 - [Requirements](#requirements)
 - [Installation - Windows 10](#installation)
 - [Heroku Deployment](#heroku)
 - [Resources Used](#resources)
+
+## Features
+* Initial user authentication through Google Firebase followed by JWT session
+authorization on backend
+
+<img src="/readme-pictures/login-signup.png" width=700><br>
+
+* Project management enables analysis of
+observation data submitted by displaying a
+table summary along with statistical graphs
+
+<img src="/readme-pictures/project-page.PNG" width=700><br>
+
+* New projects can be created with a variable
+length of survey questions giving the option
+for a variety of data types including true or
+false, numeric, short answer, multiple choice,
+and date/time
+
+<img src="/readme-pictures/form-types.gif" width=580><br>
+
+* Project data can be exported as a .csv file
+allowing users to have an offline copy of
+observation results
+
+* Responsive design using CSS media queries and MUI React components
+<img src="/readme-pictures/responsive.gif" width=700><br>
+## Design
+
+### Database Schema
+<img src="/readme-pictures/database-schema.png" width=700><br>
+**Answer Types**
+```
+0 - Boolean
+1 - Integer in specified range
+2 - Floating point number in specified range
+3 - Multiple choice (Four options, one choice is correct)
+4 - Text 
+5 - Datetime
+```
+
+### Wireframes
+<img src="/readme-pictures/wireframes.png" width=700><br>
 
 ## Requirements
 ```
